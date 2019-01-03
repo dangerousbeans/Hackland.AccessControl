@@ -1,10 +1,10 @@
-#include <Adafruit_NeoPixel.h>
+#include <NeoPixelBus.h>
 #include <ESP8266WiFi.h>
 
 const char *ssid = "MyRepublic C34D";
 const char *password = "mkv2q923t3";
 const int neoPixelPin = 14;
-const int neoPixelCount = 3;
+const int neoPixelCount = 4; //must be at least 4 for this NeoPixelBus
 
 // the setup function runs once when you press reset or power the board
 void setup()
@@ -17,6 +17,8 @@ void setup()
 void initializeSerial()
 {
   Serial.begin(115200);
+  while (!Serial)
+    ; // wait for serial attach
   Serial.println();
   Serial.println();
   Serial.println("Initializing serial...");
@@ -51,35 +53,26 @@ void initializeWifi()
   Serial.println(WiFi.localIP());
 }
 
-Adafruit_NeoPixel display;
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> display(neoPixelCount);
 void initializeOutputLeds()
 {
   Serial.println("Initializing output LEDs...");
-  display = Adafruit_NeoPixel(neoPixelCount, neoPixelPin, NEO_RGB + NEO_KHZ800);
-  display.begin();
-  display.show(); // Initialize all pixels to 'off'
+  display.Begin();
+  display.Show(); // Initialize all pixels to 'off'
 }
 
 int step = 0;
+RgbColor standbyColour(0, 128, 0);
+RgbColor blackColour(0);
 void updateOutputStatus()
 {
   for (int p = 0; p < neoPixelCount; p++)
   {
-    if (step == p)
-    {
-      display.setPixelColor(p, 0, 0, 128);
-    }
-    else
-    {
-      display.setPixelColor(p, 0);
-    }
+    display.SetPixelColor(p, p == step ? standbyColour : blackColour);
   }
-  display.show();
+  display.Show();
   step++;
-  if (step == neoPixelCount)
-  {
-    step = 0;
-  }
+  step %= neoPixelCount;
 }
 
 void loop()
