@@ -55,7 +55,7 @@ Adafruit_NeoPixel display;
 void initializeOutputLeds()
 {
   Serial.println("Initializing output LEDs...");
-  display = Adafruit_NeoPixel(neoPixelCount, neoPixelPin, NEO_GRB + NEO_KHZ800);
+  display = Adafruit_NeoPixel(neoPixelCount, neoPixelPin, NEO_RGB + NEO_KHZ800);
   display.begin();
   display.show(); // Initialize all pixels to 'off'
 }
@@ -67,7 +67,7 @@ void updateOutputStatus()
   {
     if (step == p)
     {
-      display.setPixelColor(p, 0, 128, 0);
+      display.setPixelColor(p, 0, 0, 128);
     }
     else
     {
