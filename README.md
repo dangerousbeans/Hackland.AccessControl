@@ -1,4 +1,4 @@
-# Project Title
+# Hackland.AccessControl
 
 Access control system for the Auckland Hackland hack space.
 
