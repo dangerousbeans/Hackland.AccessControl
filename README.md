@@ -33,6 +33,8 @@ How all of this is connected is left until I can set my local up and document th
 
 ### Installing
 
+Please note: I have committed my .vscode folder to make this project more portable between my own machines. You may need to merge or tweak files in this folder.
+
 1) Install visual studio code
 2) Install arduino
 3) Start visual studio code
@@ -50,11 +52,11 @@ How all of this is connected is left until I can set my local up and document th
 }
 ```
 
-8) Start arduino, go to boards manager and search for nodemcu. Install esp8266 by ESP8266 Community
+8) Start arduino, go into settings and make sure that additionalUrls is populated with the esp URL from above, then go to boards manager and search for nodemcu. Install esp8266 by ESP8266 Community
 9) Restart vscode, and open the Hackland.AccessControl.DoorController folder from the repo 
-10) Choose ArdunoISP as the programmer in the bar at the bototm
-11) Choose NodeMCU 1.0 (ESP-12E Module) as the board in the bar at the bottom
-12) Change the wifi ssid and password in the sketch near the top to your ones
+10) Choose NodeMCU 1.0 (ESP-12E Module) as the board in the bar at the bottom
+11) Change the wifi ssid and password in the sketch near the top to your ones
+12) Edit the c_cpp_properties.json file and update the paths to match your environment, restart vscode again
 13) Hit ctrl+shift+p and type "Arduino: Upload" without the quotes, this will build and upload the blink sketch
 14) To make builds faster, edit arduino.json in .vscode folder and add "output": "../build" as a setting
 
