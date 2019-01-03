@@ -1,5 +1,5 @@
 {
-    "sketch": "Blink.ino",
+    "sketch": "Main.ino",
     "port": "COM4",
     "programmer": "ArduinoISP",
     "board": "esp8266:esp8266:nodemcuv2",
