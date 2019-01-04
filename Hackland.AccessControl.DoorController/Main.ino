@@ -7,6 +7,7 @@ const char *password = "hackland1";
 
 #define SS_PIN 4
 #define RST_PIN 5
+int RELAY_PIN = D8;
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 
@@ -35,6 +36,8 @@ void initializeStatusLed()
   Serial.println(F("Initializing status..."));
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
+
+  pinMode(RELAY_PIN, OUTPUT);
 }
 
 void initializeWifi()
@@ -84,10 +87,6 @@ void readRfidToSerial()
     return;
   }
 
-  digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
-  delay(250);                      // wait for a second
-  digitalWrite(LED_BUILTIN, HIGH);  // turn the LED off by making the voltage LOW
-
   // Select one of the cards
   if (!mfrc522.PICC_ReadCardSerial())
   {
@@ -110,4 +109,11 @@ void readRfidToSerial()
   }
   content.toUpperCase();
   Serial.println(content);
+
+  digitalWrite(RELAY_PIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
+
+  delay(5000);
+  digitalWrite(RELAY_PIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);  // turn the LED off by making the voltage LOW
 }
