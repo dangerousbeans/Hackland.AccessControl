@@ -3,6 +3,8 @@
 
 const int neoPixelPin = 14;
 const int neoPixelCount = 4; //must be at least 4 for this NeoPixelBus
+const char *ssid = "Hackland";
+const char *password = "hackland1";
 
 // the setup function runs once when you press reset or power the board
 void setup()
