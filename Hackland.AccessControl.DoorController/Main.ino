@@ -1,8 +1,6 @@
 #include <NeoPixelBus.h>
 #include <ESP8266WiFi.h>
 
-const char *ssid = "MyRepublic C34D";
-const char *password = "mkv2q923t3";
 const int neoPixelPin = 14;
 const int neoPixelCount = 4; //must be at least 4 for this NeoPixelBus
 
