@@ -15,8 +15,7 @@ void setup()
 void initializeSerial()
 {
   Serial.begin(115200);
-  while (!Serial)
-    ; // wait for serial attach
+  while (!Serial); // wait for serial attach
   Serial.println();
   Serial.println();
   Serial.println("Initializing serial...");
