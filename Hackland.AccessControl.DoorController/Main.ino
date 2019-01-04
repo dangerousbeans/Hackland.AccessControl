@@ -1,15 +1,14 @@
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <MFRC522.h>
-
-const char *ssid = "Hackland";
-const char *password = "hackland1";
+#include <ESP8266WiFiMulti.h> //Wi-Fi-Multi library
 
 #define SS_PIN 4
 #define RST_PIN 5
 int RELAY_PIN = D8;
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
+ESP8266WiFiMulti wifiMulti;       // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 
 // the setup function runs once when you press reset or power the board
 void setup()
@@ -43,18 +42,17 @@ void initializeStatusLed()
 void initializeWifi()
 {
   Serial.println(F("Initializing Wifi..."));
-  Serial.print(F("Connecting to "));
-  Serial.print(ssid);
-  Serial.print(" ...");
-  WiFi.begin(ssid, password); // Connect to the network
-
-  while (WiFi.status() != WL_CONNECTED)
-  { // Wait for the Wi-Fi to connect
-    delay(1000);
+  wifiMulti.addAP((const char*)F("MyRepublic C34D"), (const char*)F("mkv2q923t3"));
+  wifiMulti.addAP((const char*)F("Hackland"), (const char*)F("hackland1"));
+  while (wifiMulti.run() != WL_CONNECTED)
+  {
+    // Wait for the Wi-Fi to connect
     Serial.print('.');
+    delay(1000);
   }
 
-  Serial.println();
+  Serial.print(F("Connected to "));
+  Serial.println(WiFi.SSID());              // Tell us what network we're connected to
   Serial.println(F("Connection established!"));
   Serial.print(F("IP: "));
   Serial.println(WiFi.localIP());
@@ -115,5 +113,5 @@ void readRfidToSerial()
 
   delay(5000);
   digitalWrite(RELAY_PIN, LOW);
-  digitalWrite(LED_BUILTIN, HIGH);  // turn the LED off by making the voltage LOW
+  digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
 }
