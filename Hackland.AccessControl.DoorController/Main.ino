@@ -34,7 +34,7 @@ void initializeStatusLed()
 {
   Serial.println(F("Initializing status..."));
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void initializeWifi()
@@ -84,9 +84,9 @@ void readRfidToSerial()
     return;
   }
 
-  digitalWrite(LED_BUILTIN, HIGH); // turn the LED on (HIGH is the voltage level)
+  digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
   delay(250);                      // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);  // turn the LED off by making the voltage LOW
+  digitalWrite(LED_BUILTIN, HIGH);  // turn the LED off by making the voltage LOW
 
   // Select one of the cards
   if (!mfrc522.PICC_ReadCardSerial())
