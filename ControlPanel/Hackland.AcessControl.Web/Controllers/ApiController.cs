@@ -37,6 +37,7 @@ namespace Hackland.AccessControl.Web.Controllers
                 DataContext.Add(door);
             }
             door.LastHeartbeatTimestamp = DateTime.Now;
+            door.IsDeleted = false;
             DataContext.SaveChanges();
             return Json(true);
         }

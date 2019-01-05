@@ -12,5 +12,6 @@ namespace Hackland.AccessControl.Data
         public DateTime LastHeartbeatTimestamp { get; set; }
         public DateTime? LastReadTimestamp { get; set; }
         public DoorStatus Status { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

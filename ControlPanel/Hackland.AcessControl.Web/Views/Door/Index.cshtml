@@ -1,7 +1,48 @@
 ﻿@using Microsoft.AspNetCore.Hosting
+@model DoorListViewModel
 @inject IHostingEnvironment env
 @{
     ViewData["Title"] = "Doors";
 }
-<h1>Doors</h1>
 
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Doors</h5>
+        <p class="card-text">Doors are automatically registered by their controllers contacting the API. If all the doors you expect are not here, check the status of the door controller boxes</p>
+    </div>
+</div>
+
+<br /><br />
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Mac address</th>
+            <th scope="col">Last heartbeat</th>
+            <th scope="col">Last read</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Items.Any())
+        {
+            <tr>
+                <td colspan="5">There are no doors registered. Check controllers.</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var door in Model.Items)
+            {
+                <tr>
+                    <th scope="row">@door.Id</th>
+                    <td>@door.MacAddress</td>
+                    <td>@door.LastHeartbeatTimestamp</td>
+                    <td>@door.LastReadTimestamp</td>
+                    <td>@door.Status</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
