@@ -23,7 +23,21 @@ ESP8266WiFiMulti wifiMulti;       // Create an instance of the ESP8266WiFiMulti 
 SimpleTimer timer;                //a timer object to handle periodic tasks without blocking delay()
 
 const int ApiRegisterFrequencyMs = 2000;
-const char ApiBaseUrl[] PROGMEM = "http://10.0.0.116/api/";
+/*
+If in development and utilizing iisexpress, you can use ngrok to allow the nodemcu to contact your local iisexpress
+Add a tunnel in ~/.ngrok2/ngrok.yml like so:
+accesscontrol:
+    addr: localhost:54445
+    proto: http
+    subdomain: accesscontrol
+    host_header: localhost:54445
+Then, assuming your port is right, (I use region: au) you should be able to access accesscontrol.au.ngrok.io which will 
+route to localhost:54445 on iisexpress correctly
+If you don't do this you'll get bad request header errors as iisexpress only allows local requests, so you would need to host this on full-iis for development
+Once the tunnel is defined, you'll need to "ngrok start accesscontrol"
+Note: i'm using a license for ngrok, if you use the free version you can't customise the subdomain and will get a random one each time
+*/
+const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.au.ngrok.io/api/";
 const bool debugHttp = true;
 
 // the setup function runs once when you press reset or power the board
