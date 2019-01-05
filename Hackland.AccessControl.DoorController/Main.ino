@@ -219,6 +219,4 @@ void sendApiRegister()
     Serial.println(payload); //Print request response payload
   }
   http.end(); //Close connection
-
-  Serial.println(JsonMessageBuffer);
 }
