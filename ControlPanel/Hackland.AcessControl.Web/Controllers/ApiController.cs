@@ -31,7 +31,7 @@ namespace Hackland.AccessControl.Web.Controllers
                 door = new Door()
                 {
                     MacAddress = model.MacAddress,
-                    Name = string.Empty,
+                    Name = "Unknown",
                     Status = Data.Enums.DoorStatus.Unknown
                 };
                 DataContext.Add(door);

@@ -10,7 +10,7 @@ namespace Hackland.AccessControl.Data
         public string Name { get; set; }
         public string MacAddress { get; set; }
         public DateTime LastHeartbeatTimestamp { get; set; }
-        public DateTime LastReadTimestamp { get; set; }
+        public DateTime? LastReadTimestamp { get; set; }
         public DoorStatus Status { get; set; }
     }
 }
