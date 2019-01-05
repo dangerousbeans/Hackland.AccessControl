@@ -15,40 +15,9 @@ namespace Hackland.AccessControl.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
+                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("Hackland.AccessControl.Data.CurrencyConversionRate", b =>
-                {
-                    b.Property<string>("Currency")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Name");
-
-                    b.Property<decimal>("Rate");
-
-                    b.HasKey("Currency");
-
-                    b.ToTable("CurrencyConversionRates");
-                });
-
-            modelBuilder.Entity("Hackland.AccessControl.Data.MarkupRates", b =>
-                {
-                    b.Property<int>("MarkupRatesId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal>("DHLFuelRate");
-
-                    b.Property<decimal>("EbayRate");
-
-                    b.Property<decimal>("PaypalRate");
-
-                    b.HasKey("MarkupRatesId");
-
-                    b.ToTable("MarkupRates");
-                });
 
             modelBuilder.Entity("Hackland.AccessControl.Data.Role", b =>
                 {
