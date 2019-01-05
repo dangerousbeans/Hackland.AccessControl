@@ -11,7 +11,9 @@ namespace Hackland.AccessControl.Data.Migrations
             migrationBuilder.AddColumn<bool>(
                 name: "IsDeleted",
                 table: "Door",
-                nullable: false);
+                nullable: false,
+                defaultValueSql: "0");
+
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
