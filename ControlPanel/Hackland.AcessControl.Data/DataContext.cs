@@ -7,7 +7,8 @@ namespace Hackland.AccessControl.Data
 {
     public class DataContext : IdentityDbContext<User, Role, Guid>
     {
-        
+        public DbSet<Door> Doors { get; set; }
+
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
@@ -24,6 +25,7 @@ namespace Hackland.AccessControl.Data
             builder.Entity<IdentityUserRole<Guid>>(e => e.ToTable("UserRole"));
             builder.Entity<IdentityUserToken<Guid>>(e => e.ToTable("UserToken"));
             builder.Entity<IdentityRoleClaim<Guid>>(e => e.ToTable("RoleClaim"));
+            builder.Entity<Door>(e => e.ToTable("Door"));
         }
 
     }
