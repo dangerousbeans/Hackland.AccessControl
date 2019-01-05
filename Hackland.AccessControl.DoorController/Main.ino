@@ -1,9 +1,16 @@
 #include <ESP8266WiFi.h>
 #include <SPI.h>
-#include <MFRC522.h>
+
 #include <ESP8266WiFiMulti.h> //Wi-Fi-Multi library
 #include <ESP8266HTTPClient.h>
+
+//The following libraries must be installed into your arduino libraries folder
+
+//from the library manager, search for frc and install MFRC522 By GithubCommunity Version 1.4.3
+#include <MFRC522.h>
+//from the library manager, search for ArduinoJson and install from Benoit Blanchon, select Version 5.13.3 (beta 6.x.x won't work)
 #include <ArduinoJson.h>
+//from github, https://github.com/schinken/SimpleTimer, download the cpp and h files (raw) and place into a folder named "SimpleTimer" in the arduino libraries folder
 #include <SimpleTimer.h>
 
 #define SS_PIN 4
