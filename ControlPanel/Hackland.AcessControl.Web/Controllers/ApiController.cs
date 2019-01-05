@@ -1,4 +1,5 @@
 ﻿using Hackland.AccessControl.Data;
+using Hackland.AccessControl.Web.Models.Api;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -18,9 +19,25 @@ namespace Hackland.AccessControl.Web.Controllers
             this.DataContext = dataContext;
         }
 
-        [HttpGet("test")]
-        public ActionResult<bool> Test()
+        [HttpPost("door/register")]
+        public ActionResult<bool> RegisterDoor(RegisterDoorModel model)
         {
+            if (model == null) return Json(false);
+            if (string.IsNullOrEmpty(model.MacAddress)) return Json(false);
+
+            var door = DataContext.Doors.FirstOrDefault(d => d.MacAddress == model.MacAddress);
+            if (door == null)
+            {
+                door = new Door()
+                {
+                    MacAddress = model.MacAddress,
+                    Name = string.Empty,
+                    Status = Data.Enums.DoorStatus.Unknown
+                };
+                DataContext.Add(door);
+            }
+            door.LastHeartbeatTimestamp = DateTime.Now;
+            DataContext.SaveChanges();
             return Json(true);
         }
 
