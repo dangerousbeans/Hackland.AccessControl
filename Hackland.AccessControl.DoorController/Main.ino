@@ -17,6 +17,7 @@ void setup()
   initializeSerial();
   initializeWifi();
   initializeRfidReader();
+  initializeApi();
 }
 void initializeSerial()
 {
@@ -115,3 +116,24 @@ void readRfidToSerial()
   digitalWrite(RELAY_PIN, LOW);
   digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
 }
+
+uint8_t MacAddressBytes[6];
+char MacAddress[18];
+//https://community.blynk.cc/t/solved-unique-mac-identification-of-a-nodemcu/15915/5
+void initializeApi()
+{
+  Serial.println(F("Initializing API..."));
+  WiFi.macAddress(MacAddressBytes);
+  for (int i = 0; i < sizeof(MacAddressBytes); ++i)
+  {
+    if (i < sizeof(MacAddressBytes) - 1)
+    {
+      sprintf(MacAddress, "%s%02x:", MacAddress, MacAddressBytes[i]);
+    }
+    else
+    {
+      sprintf(MacAddress, "%s%02x", MacAddress, MacAddressBytes[i]);
+    }
+  }
+  Serial.print("Device mac address: ");
+  Serial.println(MacAddress);}
