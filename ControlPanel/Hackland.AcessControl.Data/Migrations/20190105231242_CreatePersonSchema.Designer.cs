@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hackland.AccessControl.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190105231242_AddPersonSchema")]
-    partial class AddPersonSchema
+    [Migration("20190105231242_CreatePersonSchema")]
+    partial class CreatePersonSchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -4,7 +4,7 @@ using System;
 
 namespace Hackland.AccessControl.Data.Migrations
 {
-    public partial class AddPersonSchema : Migration
+    public partial class CreatePersonSchema : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,6 +15,8 @@ namespace Hackland.AccessControl.Data.Migrations
                    Id = table.Column<int>()
                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                    Name = table.Column<string>(nullable: false),
+                   EmailAddress = table.Column<string>(nullable: false),
+                   PhoneNumber = table.Column<string>(nullable: true),
                    CreatedTimestamp = table.Column<DateTime>(nullable: false),
                    CreatedByUserId = table.Column<Guid>(nullable: false),
                    UpdatedTimestamp = table.Column<DateTime>(nullable: true),
@@ -33,19 +35,17 @@ namespace Hackland.AccessControl.Data.Migrations
               name: "PersonDoor",
               columns: table => new
               {
-                  Id = table.Column<int>()
-                      .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                  PersonId = table.Column<int>(nullable: false),
+                  DoorId = table.Column<int>(nullable: false),
                   CreatedTimestamp = table.Column<DateTime>(nullable: false),
                   CreatedByUserId = table.Column<Guid>(nullable: false),
                   UpdatedTimestamp = table.Column<DateTime>(nullable: true),
                   UpdatedByUserId = table.Column<Guid>(nullable: true),
                   IsDeleted = table.Column<bool>(nullable: false),
-                  PersonId = table.Column<int>(nullable: false),
-                  DoorId = table.Column<int>(nullable: false)
               },
               constraints: table =>
               {
-                  table.PrimaryKey("PK_PersonDoor", x => x.Id);
+                  table.PrimaryKey("PK_PersonDoor", t => new { t.PersonId, t.DoorId});
                   table.ForeignKey("FK_PersonDoor_CreatedUser", x => x.CreatedByUserId, "User", "Id", onDelete: ReferentialAction.Restrict);
                   table.ForeignKey("FK_PersonDoor_UpdatedUser", x => x.UpdatedByUserId, "User", "Id", onDelete: ReferentialAction.Restrict);
                   table.ForeignKey("FK_PersonDoor_Person", x => x.PersonId, "Person", "Id", onDelete: ReferentialAction.Restrict);

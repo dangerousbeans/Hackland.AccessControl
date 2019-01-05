@@ -1,0 +1,50 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model PersonListViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Doors";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">People</h5>
+        <p class="card-text">People are the members who have access to doors. Create people here, then you can assign them to a token/RFID code once created by assigning a door scan from the door page.</p>
+        <a href="/person/create" class="btn btn-primary">Create new person</a>
+    </div>
+</div>
+
+<br /><br />
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Last seen</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Items.Any())
+        {
+            <tr>
+                <td colspan="5">There are no people created.</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var person in Model.Items)
+            {
+                <tr>
+                    <th scope="row">@person.Id</th>
+                    <td>@person.Name</td>
+                    <td>@person.EmailAddress</td>
+                    <td>@person.PhoneNumber</td>
+                    <td>@person.LastSeenTimestamp</td>
+                    <td>Edit | Delete | Assign Token</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

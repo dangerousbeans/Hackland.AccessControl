@@ -1,6 +1,7 @@
 ﻿using Hackland.AccessControl.Data.Enums;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 
 namespace Hackland.AccessControl.Data
 {
@@ -13,5 +14,7 @@ namespace Hackland.AccessControl.Data
         public DateTime? LastReadTimestamp { get; set; }
         public DoorStatus Status { get; set; }
         public bool IsDeleted { get; set; }
+
+        public List<PersonDoor> PersonDoors { get; set; }
     }
 }
