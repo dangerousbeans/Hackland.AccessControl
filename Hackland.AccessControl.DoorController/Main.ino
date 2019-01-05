@@ -2,13 +2,22 @@
 #include <SPI.h>
 #include <MFRC522.h>
 #include <ESP8266WiFiMulti.h> //Wi-Fi-Multi library
+#include <ESP8266HTTPClient.h>
+#include <ArduinoJson.h>
+#include <SimpleTimer.h>
 
 #define SS_PIN 4
 #define RST_PIN 5
-int RELAY_PIN = D8;
+const int RELAY_PIN = D8;
+const bool debugRfid = true;
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 ESP8266WiFiMulti wifiMulti;       // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
+SimpleTimer timer;                //a timer object to handle periodic tasks without blocking delay()
+
+const int ApiRegisterFrequencyMs = 2000;
+const char ApiBaseUrl[] PROGMEM = "http://10.0.0.116/api/";
+const bool debugHttp = true;
 
 // the setup function runs once when you press reset or power the board
 void setup()
@@ -43,8 +52,8 @@ void initializeStatusLed()
 void initializeWifi()
 {
   Serial.println(F("Initializing Wifi..."));
-  wifiMulti.addAP((const char*)F("MyRepublic C34D"), (const char*)F("mkv2q923t3"));
-  wifiMulti.addAP((const char*)F("Hackland"), (const char*)F("hackland1"));
+  wifiMulti.addAP((const char *)F("MyRepublic C34D"), (const char *)F("mkv2q923t3"));
+  wifiMulti.addAP((const char *)F("Hackland"), (const char *)F("hackland1"));
   while (wifiMulti.run() != WL_CONNECTED)
   {
     // Wait for the Wi-Fi to connect
@@ -53,7 +62,7 @@ void initializeWifi()
   }
 
   Serial.print(F("Connected to "));
-  Serial.println(WiFi.SSID());              // Tell us what network we're connected to
+  Serial.println(WiFi.SSID()); // Tell us what network we're connected to
   Serial.println(F("Connection established!"));
   Serial.print(F("IP: "));
   Serial.println(WiFi.localIP());
@@ -65,23 +74,29 @@ void initializeRfidReader()
   mfrc522.PCD_Init();                // Init MFRC522
   mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD - MFRC522 Card Reader details
   Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
+  timer.setInterval(500, readRfidToSerial);
 }
 void loop()
 {
-  readRfidToSerial();
-  delay(1000);
+  timer.run();
 }
 
 int attempt = 0;
 void readRfidToSerial()
 {
-  Serial.print(F("Read RFID ("));
-  Serial.print(attempt++);
-  Serial.println(F(")"));
+  if (debugRfid)
+  {
+    Serial.print(F("Read RFID ("));
+    Serial.print(attempt++);
+    Serial.println(F(")"));
+  }
 
   if (!mfrc522.PICC_IsNewCardPresent())
   {
-    Serial.println(F("No card present"));
+    if (debugRfid)
+    {
+      Serial.println(F("No card present"));
+    }
 
     return;
   }
@@ -89,17 +104,22 @@ void readRfidToSerial()
   // Select one of the cards
   if (!mfrc522.PICC_ReadCardSerial())
   {
-    Serial.println(F("Failed to select card"));
+    if (debugRfid)
+    {
+      Serial.println(F("Failed to select card"));
+    }
 
     return;
   }
 
-  Serial.println(F("Card detected"));
+  if (debugRfid)
+  {
+    Serial.println(F("Card detected"));
+  }
 
   // Dump debug info about the card; PICC_HaltA() is automatically called
   //mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
 
-  Serial.print("UID tag:");
   String content = "";
   for (byte i = 0; i < mfrc522.uid.size; i++)
   {
@@ -107,12 +127,28 @@ void readRfidToSerial()
     content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
   content.toUpperCase();
-  Serial.println(content);
 
+  if (debugRfid)
+  {
+    Serial.print("UID tag:");
+    Serial.println(content);
+  }
+}
+
+void unlockDoor(bool permanent)
+{
   digitalWrite(RELAY_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
 
-  delay(5000);
+  if (!permanent)
+  {
+    //call lockDoor in 5 sec
+    timer.setTimeout(5000, lockDoor);
+  }
+}
+
+void lockDoor()
+{
   digitalWrite(RELAY_PIN, LOW);
   digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
 }
@@ -136,4 +172,53 @@ void initializeApi()
     }
   }
   Serial.print("Device mac address: ");
-  Serial.println(MacAddress);}
+  Serial.println(MacAddress);
+
+  timer.setInterval(ApiRegisterFrequencyMs, sendApiRegister);
+}
+
+void sendApiRegister()
+{
+  Serial.println(F("API Register"));
+
+  char url[64];
+  strcpy(url, ApiBaseUrl);
+  strcat(url, (const char *)F("door/register"));
+
+  StaticJsonBuffer<300> JsonBuffer;
+  JsonObject &JsonEncoder = JsonBuffer.createObject();
+
+  //add properties like this
+  //https://techtutorialsx.com/2017/01/08/esp8266-posting-json-data-to-a-flask-server-on-the-cloud/
+  JsonEncoder["MacAddress"] = MacAddress;
+
+  //debug
+  char JsonMessageBuffer[300];
+  JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
+
+  HTTPClient http;
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+
+  if (debugHttp)
+  {
+    Serial.print("Request ");
+    Serial.println(url);
+    Serial.print("=> ");
+    Serial.println(JsonMessageBuffer);
+  }
+
+  int httpCode = http.POST(JsonMessageBuffer); //Send the request
+  String payload = http.getString();           //Get response
+
+  if (debugHttp)
+  {
+    Serial.print("Response ");
+    Serial.println(httpCode); //Print HTTP return code
+    Serial.print("<= ");
+    Serial.println(payload); //Print request response payload
+  }
+  http.end(); //Close connection
+
+  Serial.println(JsonMessageBuffer);
+}
