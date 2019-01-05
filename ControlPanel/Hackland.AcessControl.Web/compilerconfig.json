@@ -1,0 +1,10 @@
+﻿[
+  {
+    "outputFile": "wwwroot/css/Hackland.AccessControl.css",
+    "inputFile": "wwwroot/css/Hackland.AccessControl.less"
+  },
+  {
+    "outputFile": "wwwroot/css/app.css",
+    "inputFile": "wwwroot/css/app.less"
+  }
+]

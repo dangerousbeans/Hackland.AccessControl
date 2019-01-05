@@ -1,0 +1,38 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Log in";
+    ViewData["BodyClass"] = "login";
+    ViewData["HideNav"] = true;
+}
+
+<form class="form-signin" method="post">
+    @*<img src="~/images/logo.svg" style="max-height: 100px" />*@
+    <h1>Hackland.AccessControl</h1>
+    <div asp-validation-summary="All" class="alert alert-danger alert-dismissible" role="alert"></div>
+
+    <div class="field-group">
+        <label asp-for="Input.Email" class="sr-only"></label>
+        <input asp-for="Input.Email" class="form-control" type="email" required autofocus placeholder="Email address" />
+        <span asp-validation-for="Input.Email"></span>
+    </div>
+    <div class="field-group">
+        <label asp-for="Input.Password" class="sr-only"></label>
+        <input asp-for="Input.Password" class="form-control" placeholder="Password" required />
+        <span asp-validation-for="Input.Password"></span>
+    </div>
+    <div class="checkbox mb-3">
+        <label asp-for="Input.RememberMe">
+            <input asp-for="Input.RememberMe" />
+            @Html.DisplayNameFor(m => m.Input.RememberMe)
+        </label>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block">Log in</button>
+    <div class="mt-5 mb-3">
+        <a class="text-muted" asp-page="./ForgotPassword">Forgot password?</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
