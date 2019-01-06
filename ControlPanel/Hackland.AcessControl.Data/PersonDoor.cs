@@ -11,7 +11,7 @@ namespace Hackland.AccessControl.Data
         public int DoorId { get; set; }
 
         public DateTime CreatedTimestamp { get; set; }
-        public Guid CreatedByUserId { get; set; }
+        public Guid? CreatedByUserId { get; set; }
         public DateTime? UpdatedTimestamp { get; set; }
         public Guid? UpdatedByUserId { get; set; }
         public bool IsDeleted { get; set; }

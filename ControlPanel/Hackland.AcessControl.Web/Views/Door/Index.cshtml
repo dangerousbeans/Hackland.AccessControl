@@ -18,10 +18,12 @@
     <thead>
         <tr>
             <th scope="col">#</th>
+            <th scope="col">Name</th>
             <th scope="col">Mac address</th>
             <th scope="col">Last heartbeat</th>
             <th scope="col">Last read</th>
             <th scope="col">Status</th>
+            <th scope="col">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -37,10 +39,14 @@
             {
                 <tr>
                     <th scope="row">@door.Id</th>
+                    <td>@door.Name</td>
                     <td>@door.MacAddress</td>
                     <td>@door.LastHeartbeatTimestamp</td>
                     <td>@door.LastReadTimestamp</td>
                     <td>@door.Status</td>
+                    <td>
+                        <a href="/door/update/@door.Id" class="btn-sm btn-primary">Edit</a>
+                    </td>
                 </tr>
             }
         }

@@ -1,0 +1,27 @@
+﻿@model IDoorViewModel
+
+<div class="form-group row">
+    <label asp-for="Name" class="col-sm-2 control-label"></label>
+    <div class="col-sm-10 field-group">
+        <input type="text" asp-for="Name" class="form-control" placeholder="First Last" />
+        <span asp-validation-for="Name"></span>
+    </div>
+</div>
+
+<hr class="mt-5" />
+<div class="row">
+    <div class="col-sm-1">
+        <input type="submit" class="btn btn-primary" value="Save" />
+    </div>
+    @if (Model.Mode == CreateUpdateModeEnum.Update)
+    {
+    <div class="col-sm-1">
+        <a href="/door/delete/@((Model as UpdateDoorViewModel).Id)"class="btn btn-outline-danger" data-toggle="confirmation" data-btn-ok-class="btn-danger" formaction="/person/delete">delete</a>
+    </div>
+    }
+    <div class="col-sm-1">
+        <a href="/person" class="text-secondary">Cancel</a>
+    </div>
+</div>
+
+

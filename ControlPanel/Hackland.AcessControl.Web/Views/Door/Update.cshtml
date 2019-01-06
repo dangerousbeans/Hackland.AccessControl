@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model UpdateDoorViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Update Door";
+}
+<h3>Update door @(string.Equals(Model.Name, "unknown", StringComparison.InvariantCultureIgnoreCase) ? Model.MacAddress: Model.Name)</h3>
+<partial name="_Message" />
+<form action="Update" class="mt-5" method="post" novalidate>
+
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="Mode" type="hidden" />
+    <partial name="_EditFieldsPartial" />
+</form>

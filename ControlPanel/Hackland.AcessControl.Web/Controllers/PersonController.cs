@@ -103,22 +103,6 @@ namespace Hackland.AccessControl.Web.Controllers
                 }, CreateUpdateModeEnum.Create)));
         }
 
-        private T BindMetadataFields<T>(T item, CreateUpdateModeEnum mode) where T : IMetadataFields
-        {
-            var userId = Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (mode == CreateUpdateModeEnum.Create)
-            {
-                item.CreatedTimestamp = DateTime.Now;
-                item.CreatedByUserId = userId;
-            }
-            else
-            {
-                item.UpdatedTimestamp = DateTime.Now;
-                item.UpdatedByUserId = userId;
-            }
-            return item;
-        }
-
         [HttpGet]
         public IActionResult Update(int id)
         {
@@ -185,7 +169,8 @@ namespace Hackland.AccessControl.Web.Controllers
             .FirstOrDefault();
 
             item.IsDeleted = true;
-            item.PersonDoors.ForEach(pd => pd.IsDeleted = true);
+            BindMetadataFields(item, CreateUpdateModeEnum.Update);
+            item.PersonDoors.ForEach(pd => BindMetadataFields(pd, CreateUpdateModeEnum.Update).IsDeleted = true);
 
             DataContext.SaveChanges();
 

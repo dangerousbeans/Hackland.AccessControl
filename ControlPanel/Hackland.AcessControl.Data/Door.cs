@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Hackland.AccessControl.Data
 {
-    public class Door
+    public class Door : IMetadataFields
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -17,5 +17,13 @@ namespace Hackland.AccessControl.Data
 
         public List<PersonDoor> PersonDoors { get; set; }
         public List<DoorRead> DoorReads { get; set; }
+
+        public DateTime CreatedTimestamp { get; set; }
+        public Guid? CreatedByUserId { get; set; }
+        public DateTime? UpdatedTimestamp { get; set; }
+        public Guid? UpdatedByUserId { get; set; }
+
+        public virtual User CreatedByUser { get; set; }
+        public virtual User UpdatedByUser { get; set; }
     }
 }

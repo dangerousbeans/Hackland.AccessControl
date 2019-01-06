@@ -1,8 +1,10 @@
 ﻿using Hackland.AccessControl.Data;
+using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models;
 using Hackland.AccessControl.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -10,7 +12,7 @@ using System.Linq;
 namespace Hackland.AccessControl.Web.Controllers
 {
     [Authorize]
-    public class DoorController : Controller
+    public class DoorController : ControllerBase
     {
         protected DataContext DataContext { get; set; }
 
@@ -39,6 +41,69 @@ namespace Hackland.AccessControl.Web.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult Update(int id)
+        {
+            var item = DataContext.Doors
+                .Include(door => door.DoorReads)
+                .ThenInclude(personDoors => personDoors.Person)
+                .Where(d => d.Id == id)
+                .Select(d => d)
+                .FirstOrDefault();
+
+            if (item == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var model = item.ConvertTo<UpdateDoorViewModel>();
+            model.Mode = CreateUpdateModeEnum.Update;
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult Update(UpdateDoorBindingModel binding)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(binding.ConvertTo<UpdateDoorViewModel>());
+            }
+            var item = DataContext.Doors
+             .Where(p => p.Id == binding.Id)
+             .Select(p => p)
+             .FirstOrDefault();
+            binding.ConvertTo<Door>(item);
+
+            BindMetadataFields(item, binding.Mode);
+
+            DataContext.SaveChanges();
+
+            AddSuccess("Success", "Updated door {0}", item.Name);
+            return RedirectToAction("Index");
+        }
+
+
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var item = DataContext.Doors
+                .Include(d => d.PersonDoors)
+                .Where(p => p.Id == id)
+                .Select(p => p)
+                .FirstOrDefault();
+
+            item.IsDeleted = true;
+            BindMetadataFields(item, CreateUpdateModeEnum.Update);
+            item.PersonDoors.ForEach(pd => BindMetadataFields(pd, CreateUpdateModeEnum.Update).IsDeleted = true);
+
+            DataContext.SaveChanges();
+
+            AddSuccess("Success", "Deleted door {0}", item.Name);
+            return RedirectToAction("Index");
+
         }
 
     }

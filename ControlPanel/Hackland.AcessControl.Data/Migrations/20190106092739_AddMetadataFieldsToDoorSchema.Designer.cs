@@ -4,14 +4,16 @@ using Hackland.AccessControl.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hackland.AccessControl.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190106092739_AddMetadataFieldsToDoorSchema")]
+    partial class AddMetadataFieldsToDoorSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,10 +27,6 @@ namespace Hackland.AccessControl.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Guid?>("CreatedByUserId");
-
-                    b.Property<DateTime>("CreatedTimestamp");
-
                     b.Property<bool>("IsDeleted");
 
                     b.Property<DateTime>("LastHeartbeatTimestamp");
@@ -41,15 +39,7 @@ namespace Hackland.AccessControl.Data.Migrations
 
                     b.Property<int>("Status");
 
-                    b.Property<Guid?>("UpdatedByUserId");
-
-                    b.Property<DateTime?>("UpdatedTimestamp");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("Door");
                 });
@@ -85,7 +75,7 @@ namespace Hackland.AccessControl.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Guid?>("CreatedByUserId");
+                    b.Property<Guid>("CreatedByUserId");
 
                     b.Property<DateTime>("CreatedTimestamp");
 
@@ -118,7 +108,7 @@ namespace Hackland.AccessControl.Data.Migrations
 
                     b.Property<int>("DoorId");
 
-                    b.Property<Guid?>("CreatedByUserId");
+                    b.Property<Guid>("CreatedByUserId");
 
                     b.Property<DateTime>("CreatedTimestamp");
 
@@ -305,17 +295,6 @@ namespace Hackland.AccessControl.Data.Migrations
                     b.ToTable("UserToken");
                 });
 
-            modelBuilder.Entity("Hackland.AccessControl.Data.Door", b =>
-                {
-                    b.HasOne("Hackland.AccessControl.Data.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId");
-
-                    b.HasOne("Hackland.AccessControl.Data.User", "UpdatedByUser")
-                        .WithMany()
-                        .HasForeignKey("UpdatedByUserId");
-                });
-
             modelBuilder.Entity("Hackland.AccessControl.Data.DoorRead", b =>
                 {
                     b.HasOne("Hackland.AccessControl.Data.Door", "Door")
@@ -332,7 +311,8 @@ namespace Hackland.AccessControl.Data.Migrations
                 {
                     b.HasOne("Hackland.AccessControl.Data.User", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserId");
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Hackland.AccessControl.Data.User", "UpdatedByUser")
                         .WithMany()
@@ -343,7 +323,8 @@ namespace Hackland.AccessControl.Data.Migrations
                 {
                     b.HasOne("Hackland.AccessControl.Data.User", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserId");
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Hackland.AccessControl.Data.Door", "Door")
                         .WithMany("PersonDoors")

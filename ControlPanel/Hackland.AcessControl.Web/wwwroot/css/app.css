@@ -42,7 +42,7 @@ body.login .form-signin input[type="password"] {
   border-top-right-radius: 0;
 }
 .validation-summary-valid {
-  display: none;
+  display: none !important;
 }
 .field-group {
   position: relative;

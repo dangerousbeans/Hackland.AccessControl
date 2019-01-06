@@ -1,16 +1,35 @@
-﻿using Hackland.AccessControl.Web.Extensions;
+﻿using Hackland.AccessControl.Data;
+using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Hackland.AccessControl.Web.Controllers
 {
     public class ControllerBase : Controller
     {
+
+        public T BindMetadataFields<T>(T item, CreateUpdateModeEnum mode) where T : IMetadataFields
+        {
+            var userId = Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (mode == CreateUpdateModeEnum.Create)
+            {
+                item.CreatedTimestamp = DateTime.Now;
+                item.CreatedByUserId = userId;
+            }
+            else
+            {
+                item.UpdatedTimestamp = DateTime.Now;
+                item.UpdatedByUserId = userId;
+            }
+            return item;
+        }
+
         public void AddMessage(MessageModel message)
         {
             var controller = this;

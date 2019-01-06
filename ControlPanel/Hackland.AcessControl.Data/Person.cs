@@ -13,7 +13,7 @@ namespace Hackland.AccessControl.Data
         public string PhoneNumber { get; set; }
         public DateTime? LastSeenTimestamp { get; set; }
         public DateTime CreatedTimestamp { get; set; }
-        public Guid CreatedByUserId { get; set; }
+        public Guid? CreatedByUserId { get; set; }
         public DateTime? UpdatedTimestamp { get; set; }
         public Guid? UpdatedByUserId { get; set; }
         public bool IsDeleted { get; set; }
