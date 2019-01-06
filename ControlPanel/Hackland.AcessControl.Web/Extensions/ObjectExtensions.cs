@@ -13,10 +13,14 @@ namespace Hackland.AccessControl.Web.Extensions
 
         public static TConvert ConvertTo<TConvert>(this object entity) where TConvert : new()
         {
+            return ConvertTo<TConvert>(entity, default(TConvert));
+        }
+        public static TConvert ConvertTo<TConvert>(this object entity, TConvert convert) where TConvert : new()
+        {
             var convertProperties = TypeDescriptor.GetProperties(typeof(TConvert)).Cast<PropertyDescriptor>();
             var entityProperties = TypeDescriptor.GetProperties(entity).Cast<PropertyDescriptor>();
 
-            var convert = new TConvert();
+            if (convert == null) convert = new TConvert();
 
             foreach (var entityProperty in entityProperties)
             {
@@ -32,7 +36,7 @@ namespace Hackland.AccessControl.Web.Extensions
                     else
                     {
                         //destination is nullable, source is not, underlying type matches
-                        if(IsNullable(convertProperty.PropertyType) && 
+                        if (IsNullable(convertProperty.PropertyType) &&
                             !IsNullable(entityProperty.PropertyType) &&
                             Nullable.GetUnderlyingType(convertProperty.PropertyType) == entityProperty.PropertyType
                         )

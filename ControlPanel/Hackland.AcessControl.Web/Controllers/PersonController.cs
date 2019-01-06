@@ -152,7 +152,22 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpPost]
         public IActionResult Update(UpdatePersonBindingModel binding)
         {
-            // check valid model state and update data
+            if (!ModelState.IsValid)
+            {
+                return View(binding.ConvertTo<UpdatePersonViewModel>());
+            }
+            var item = DataContext.People
+             .Include(person => person.PersonDoors)
+             .ThenInclude(personDoors => personDoors.Door)
+             .Where(p => p.Id == binding.Id)
+             .Select(p => p)
+             .FirstOrDefault();
+            binding.ConvertTo<Person>(item);
+
+            BindMetadataFields(item, binding.Mode);
+            SynchronisePersonDoor(binding, item);
+
+            DataContext.SaveChanges();
             return RedirectToAction("Index");
         }
     }
