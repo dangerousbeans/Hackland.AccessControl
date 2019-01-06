@@ -128,7 +128,7 @@ namespace Hackland.AccessControl.Web.Controllers
                 .Select(p => p)
                 .FirstOrDefault();
 
-            if(item == null)
+            if (item == null)
             {
                 return RedirectToAction("Index");
             }
@@ -169,6 +169,24 @@ namespace Hackland.AccessControl.Web.Controllers
 
             DataContext.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var item = DataContext.People
+            .Include(person => person.PersonDoors)
+            .Where(p => p.Id == id)
+            .Select(p => p)
+            .FirstOrDefault();
+
+            item.IsDeleted = true;
+            item.PersonDoors.ForEach(pd => pd.IsDeleted = true);
+
+            DataContext.SaveChanges();
+            return RedirectToAction("Index");
+
         }
     }
 }

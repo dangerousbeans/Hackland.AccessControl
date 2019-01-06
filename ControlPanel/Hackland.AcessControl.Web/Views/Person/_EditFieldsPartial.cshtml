@@ -53,7 +53,7 @@
     @if (Model.Mode == CreateUpdateModeEnum.Update)
     {
     <div class="col-sm-1">
-        <button type="submit" class="btn btn-outline-danger" formaction="/person/delete">delete</button>
+        <a href="/person/delete/@((Model as UpdatePersonViewModel).Id)"class="btn btn-outline-danger" data-toggle="confirmation" data-btn-ok-class="btn-danger" formaction="/person/delete">delete</a>
     </div>
     }
     <div class="col-sm-1">
