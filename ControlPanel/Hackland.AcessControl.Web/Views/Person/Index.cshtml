@@ -57,7 +57,15 @@
                     <td>@person.EmailAddress</td>
                     <td>@person.PhoneNumber</td>
                     <td>@(person.LastSeenTimestamp.HasValue ? person.LastSeenTimestamp.Value.ToString("dd/MM/yyyy") : "Never")</td>
-                    <td>Edit | Delete | Assign Token</td>
+                    <td>
+                        <a href="/person/update/@person.Id" class="btn-sm btn-primary">Edit</a>
+                        @if (Model.IsAssignAvailable)
+                        {
+                            <a href="/person/assign-token/@person.Id" class="btn-sm btn-secondary">Assign token</a>
+                        }
+
+                    </td>
+
                 </tr>
             }
         }

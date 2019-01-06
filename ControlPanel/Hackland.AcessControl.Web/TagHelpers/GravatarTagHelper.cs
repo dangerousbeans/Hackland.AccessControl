@@ -13,7 +13,7 @@ namespace Hackland.AccessControl.Web.TagHelpers
         public string Email { get; set; }
         public int? Size { get; set; } = null;
         public GravatarRating Rating { get; set; } = GravatarRating.Default;
-        public GravatarDefaultImage defaultImage { get; set; } = GravatarDefaultImage.MysteryMan;
+        public GravatarDefaultImage DefaultImage { get; set; } = GravatarDefaultImage.MysteryMan;
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
@@ -45,17 +45,17 @@ namespace Hackland.AccessControl.Web.TagHelpers
             if (Rating != GravatarRating.Default)
                 addParam("r", Rating.ToString().ToLower());
 
-            if (defaultImage != GravatarDefaultImage.Default)
+            if (DefaultImage != GravatarDefaultImage.Default)
             {
-                if (defaultImage == GravatarDefaultImage.Http404)
+                if (DefaultImage == GravatarDefaultImage.Http404)
                     addParam("d", "404");
-                else if (defaultImage == GravatarDefaultImage.Identicon)
+                else if (DefaultImage == GravatarDefaultImage.Identicon)
                     addParam("d", "identicon");
-                if (defaultImage == GravatarDefaultImage.MonsterId)
+                if (DefaultImage == GravatarDefaultImage.MonsterId)
                     addParam("d", "monsterid");
-                if (defaultImage == GravatarDefaultImage.MysteryMan)
+                if (DefaultImage == GravatarDefaultImage.MysteryMan)
                     addParam("d", "mm");
-                if (defaultImage == GravatarDefaultImage.Wavatar)
+                if (DefaultImage == GravatarDefaultImage.Wavatar)
                     addParam("d", "wavatar");
             }
 

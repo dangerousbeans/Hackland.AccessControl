@@ -5,6 +5,7 @@ using Hackland.AccessControl.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,10 +28,13 @@ namespace Hackland.AccessControl.Web.Controllers
         {
             var people = (from d in DataContext.People orderby d.Name where !d.IsDeleted select d);
             var doors = (from d in DataContext.Doors where !d.IsDeleted select d);
+            //if there is a recorded scan which has not been linked to a person
+            var isAssignAvailable = (from dr in DataContext.DoorReads where dr.PersonId == null select dr.Id).Any();
             var model = new PersonListViewModel
             {
                 Items = people.ToList(),
-                IsCreateAvailable = doors.Any()
+                IsCreateAvailable = doors.Any(),
+                IsAssignAvailable = isAssignAvailable
             };
 
             return View(model);
@@ -117,9 +121,31 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpGet]
         public IActionResult Update(int id)
         {
-            var model = new UpdatePersonViewModel();
+            var item = DataContext.People
+                .Include(person => person.PersonDoors)
+                .ThenInclude(personDoors => personDoors.Door)
+                .Where(p => p.Id == id)
+                .Select(p => p)
+                .FirstOrDefault();
+
+            if(item == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var model = item.ConvertTo<UpdatePersonViewModel>();
             model.Mode = CreateUpdateModeEnum.Update;
             BindAvailableDoors(model);
+
+            //copy selected state into doors
+            if (item.PersonDoors != null)
+            {
+                foreach (var selectedDoor in item.PersonDoors.Where(pd => !pd.IsDeleted).Select(pd => pd.DoorId))
+                {
+                    var selected = model.Doors.FirstOrDefault(d => string.Equals(d.Value, selectedDoor.ToString()));
+                    selected.Selected = true;
+                }
+            }
             return View(model);
         }
 

@@ -9,6 +9,7 @@ namespace Hackland.AccessControl.Data
     {
         public DbSet<Door> Doors { get; set; }
         public DbSet<Person> People { get; set; }
+        public DbSet<DoorRead> DoorReads { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
@@ -29,6 +30,7 @@ namespace Hackland.AccessControl.Data
             builder.Entity<Door>(e => e.ToTable("Door"));
             builder.Entity<Person>(e => e.ToTable("Person"));
             builder.Entity<PersonDoor>(e => e.ToTable("PersonDoor"));
+            builder.Entity<DoorRead>(e => e.ToTable("DoorRead"));
 
             builder.Entity<PersonDoor>()
                 .HasKey(t => new { t.PersonId, t.DoorId });
@@ -41,6 +43,20 @@ namespace Hackland.AccessControl.Data
             builder.Entity<PersonDoor>()
                 .HasOne(pd => pd.Door)
                 .WithMany(p => p.PersonDoors)
+                .HasForeignKey(pd => pd.DoorId);
+
+
+            builder.Entity<DoorRead>()
+                .HasKey(t => t.Id);
+
+            builder.Entity<DoorRead>()
+                .HasOne(pd => pd.Person)
+                .WithMany(p => p.DoorReads)
+                .HasForeignKey(pd => pd.PersonId);
+
+            builder.Entity<DoorRead>()
+                .HasOne(pd => pd.Door)
+                .WithMany(p => p.DoorReads)
                 .HasForeignKey(pd => pd.DoorId);
         }
 

@@ -10,5 +10,6 @@ namespace Hackland.AccessControl.Web.Models.ViewModels
     {
         public IEnumerable<Person> Items { get; set; }
         public bool IsCreateAvailable { get; internal set; }
+        public bool IsAssignAvailable { get; internal set; }
     }
 }

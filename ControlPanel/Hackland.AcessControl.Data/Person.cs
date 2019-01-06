@@ -18,9 +18,10 @@ namespace Hackland.AccessControl.Data
         public Guid? UpdatedByUserId { get; set; }
         public bool IsDeleted { get; set; }
 
-        public List<PersonDoor> PersonDoors{ get; set; }
+        public List<PersonDoor> PersonDoors { get; set; }
 
         public virtual User CreatedByUser { get; set; }
         public virtual User UpdatedByUser { get; set; }
+        public List<DoorRead> DoorReads { get; set; }
     }
 }

@@ -50,6 +50,12 @@
     <div class="col-sm-1">
         <input type="submit" class="btn btn-primary" value="Save" />
     </div>
+    @if (Model.Mode == CreateUpdateModeEnum.Update)
+    {
+    <div class="col-sm-1">
+        <button type="submit" class="btn btn-outline-danger" formaction="/person/delete">delete</button>
+    </div>
+    }
     <div class="col-sm-1">
         <a href="/people" class="text-secondary">Cancel</a>
     </div>

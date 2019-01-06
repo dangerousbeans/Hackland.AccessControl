@@ -16,5 +16,6 @@ namespace Hackland.AccessControl.Data
         public bool IsDeleted { get; set; }
 
         public List<PersonDoor> PersonDoors { get; set; }
+        public List<DoorRead> DoorReads { get; set; }
     }
 }
