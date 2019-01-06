@@ -30,7 +30,7 @@
 <table class="table table-sm">
     <thead>
         <tr>
-            <th scope="col">#</th>
+            <th scope="col" style="width:40px;"></th>
             <th scope="col">Name</th>
             <th scope="col">Email</th>
             <th scope="col">Phone</th>
@@ -50,7 +50,9 @@
             foreach (var person in Model.Items)
             {
                 <tr>
-                    <th scope="row">@person.Id</th>
+                    <td scope="row">
+                        <gravatar email="@person.EmailAddress" size="32"></gravatar>
+                    </td>
                     <td>@person.Name</td>
                     <td>@person.EmailAddress</td>
                     <td>@person.PhoneNumber</td>

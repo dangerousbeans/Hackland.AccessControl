@@ -8,7 +8,11 @@
     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post" id="logoutForm" class="navbar-right form-inline my-2 my-lg-0">
         <ul class="nav navbar-nav navbar-right">
             <li>
-                <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
+                @{ 
+                    var username = UserManager.GetUserName(User);
+                }
+                <gravatar email="@username" size="32" style="display:inline-block;" class="mr-1"></gravatar>
+                <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage" style="display:inline-block;">Hello @username!</a>
             </li>
             <li>
                 <button type="submit" class="btn btn-outline-success my-2 my-sm-0">Logout</button>

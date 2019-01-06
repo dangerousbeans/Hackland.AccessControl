@@ -25,7 +25,7 @@ namespace Hackland.AccessControl.Web.Controllers
 
         public IActionResult Index()
         {
-            var people = (from d in DataContext.People where !d.IsDeleted select d);
+            var people = (from d in DataContext.People orderby d.Name where !d.IsDeleted select d);
             var doors = (from d in DataContext.Doors where !d.IsDeleted select d);
             var model = new PersonListViewModel
             {

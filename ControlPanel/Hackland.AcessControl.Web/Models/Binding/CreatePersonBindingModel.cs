@@ -15,10 +15,11 @@ namespace Hackland.AccessControl.Web.Models
         public string Name { get; set; }
 
         [Required]
+        [EmailAddress]
         [Display(Name = "Email address")]
         public string EmailAddress { get; set; }
 
-        [Required]
+        [Phone]
         [Display(Name = "Phone number")]
         public string PhoneNumber { get; set; }
 
