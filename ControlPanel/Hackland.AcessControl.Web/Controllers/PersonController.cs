@@ -15,7 +15,7 @@ using System.Security.Claims;
 namespace Hackland.AccessControl.Web.Controllers
 {
     [Authorize]
-    public class PersonController : Controller
+    public class PersonController : ControllerBase
     {
         protected DataContext DataContext { get; set; }
 
@@ -68,6 +68,7 @@ namespace Hackland.AccessControl.Web.Controllers
             SynchronisePersonDoor(binding, item);
             DataContext.People.Add(item);
             DataContext.SaveChanges();
+            AddSuccess("Success", "Created person {0}", item.Name);
             return RedirectToAction("Index");
 
         }
@@ -168,6 +169,8 @@ namespace Hackland.AccessControl.Web.Controllers
             SynchronisePersonDoor(binding, item);
 
             DataContext.SaveChanges();
+
+            AddSuccess("Success", "Updated person {0}", item.Name);
             return RedirectToAction("Index");
         }
 
@@ -185,6 +188,8 @@ namespace Hackland.AccessControl.Web.Controllers
             item.PersonDoors.ForEach(pd => pd.IsDeleted = true);
 
             DataContext.SaveChanges();
+
+            AddSuccess("Success", "Deleted person {0}", item.Name);
             return RedirectToAction("Index");
 
         }

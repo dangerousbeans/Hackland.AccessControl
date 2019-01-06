@@ -1,0 +1,65 @@
+﻿@if (TempData.ContainsKey("Messages"))
+{
+    var messages = TempData.Get<List<MessageModel>>(MessageModel.TempDataKey);
+    if (messages != null && messages.Any())
+    {
+        <div class="mt-5">
+            @foreach (var message in messages)
+            {
+                switch (message.Type)
+                {
+                    case MessageType.Error:
+                        <div class="alert alert-danger alert-white rounded">
+                            <button type="button" data-dismiss="alert" aria-hidden="true" class="close">×</button>
+                            <div class="icon">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <strong>@message.Title</strong>
+                            @message.Text
+                        </div>
+                        break;
+                    case MessageType.Info:
+                        <div class="alert alert-info alert-white rounded">
+                            <button type="button" data-dismiss="alert" aria-hidden="true" class="close">×</button>
+                            <div class="icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <strong>@message.Title</strong>
+                            @message.Text
+                        </div>
+                        break;
+                    case MessageType.Warning:
+                        <div class="alert alert-warning alert-white rounded">
+                            <button type="button" data-dismiss="alert" aria-hidden="true" class="close">×</button>
+                            <div class="icon">
+                                <i class="fas fa-warning"></i>
+                            </div>
+                            <strong>@message.Title</strong>
+                            @message.Text
+                        </div>
+                        break;
+                    case MessageType.Success:
+                        <div class="alert alert-success alert-white rounded">
+                            <button type="button" data-dismiss="alert" aria-hidden="true" class="close">×</button>
+                            <div class="icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <strong>@message.Title</strong>
+                            @message.Text
+                        </div>
+                        break;
+                }
+                if (message.Redirect != null)
+                {
+                    <script type="text/javascript">
+            window.setTimeout(function () {
+                window.location.href = '@message.Redirect.Url';
+}, @(message.Redirect.TimeoutSeconds * 1000))
+                    </script>
+
+                }
+            }
+        </div>
+    }
+
+}

@@ -5,6 +5,7 @@
     ViewData["Title"] = "Update Person";
 }
 <h3>Update person @Model.Name</h3>
+<partial name="_Message" />
 <form action="Update" class="mt-5" method="post" novalidate>
 
     <input asp-for="Id" type="hidden" />
