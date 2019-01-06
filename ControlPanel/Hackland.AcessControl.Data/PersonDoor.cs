@@ -5,15 +5,15 @@ using System.Collections.Generic;
 
 namespace Hackland.AccessControl.Data
 {
-    public class PersonDoor
+    public class PersonDoor : IMetadataFields
     {
         public int PersonId { get; set; }
         public int DoorId { get; set; }
 
         public DateTime CreatedTimestamp { get; set; }
         public Guid CreatedByUserId { get; set; }
-        public DateTime UpdatedTimestamp { get; set; }
-        public Guid UpdatedByUserId { get; set; }
+        public DateTime? UpdatedTimestamp { get; set; }
+        public Guid? UpdatedByUserId { get; set; }
         public bool IsDeleted { get; set; }
 
         public virtual Person Person { get; set; }

@@ -1,0 +1,15 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model UpdatePersonViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Update Person";
+}
+<h3>Update person @Model.Name</h3>
+<form action="Update" class="mt-5" method="post" novalidate>
+
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="Mode" type="hidden" />
+    <partial name="_EditFieldsPartial" />
+
+    <button type="submit" class="btn btn-danger" formaction="/person/delete">delete</button>
+</form>

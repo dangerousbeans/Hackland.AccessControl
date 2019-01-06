@@ -1,4 +1,5 @@
 ﻿using Hackland.AccessControl.Data;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace Hackland.AccessControl.Web.Models.ViewModels
 {
-    public class PersonListViewModel
+    public class UpdatePersonViewModel : UpdatePersonBindingModel, IPersonViewModel
     {
-        public IEnumerable<Person> Items { get; set; }
-        public bool IsCreateAvailable { get; internal set; }
+        
     }
 }

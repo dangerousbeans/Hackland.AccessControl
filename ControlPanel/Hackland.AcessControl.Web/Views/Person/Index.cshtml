@@ -2,14 +2,26 @@
 @model PersonListViewModel
 @inject IHostingEnvironment env
 @{
-    ViewData["Title"] = "Doors";
+    ViewData["Title"] = "People";
 }
 
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">People</h5>
         <p class="card-text">People are the members who have access to doors. Create people here, then you can assign them to a token/RFID code once created by assigning a door scan from the door page.</p>
-        <a href="/person/create" class="btn btn-primary">Create new person</a>
+        @if (Model.IsCreateAvailable)
+        {
+            <a href="/person/create" class="btn btn-primary">Create new person</a>
+        }
+        else
+        {
+            <a href="/person/create" class="btn btn-primary btn-disabled disabled" disabled>Create new person</a>
+
+            <span data-balloon="You cannot create people because no doors are registered" data-balloon-pos="right" data-baloon-length="medium">
+                <i class="fas fa-question-circle"></i>
+            </span>
+
+        }
     </div>
 </div>
 
@@ -23,13 +35,14 @@
             <th scope="col">Email</th>
             <th scope="col">Phone</th>
             <th scope="col">Last seen</th>
+            <th scope="col">Actions</th>
         </tr>
     </thead>
     <tbody>
         @if (!Model.Items.Any())
         {
             <tr>
-                <td colspan="5">There are no people created.</td>
+                <td colspan="6">There are no people created.</td>
             </tr>
         }
         else
@@ -41,7 +54,7 @@
                     <td>@person.Name</td>
                     <td>@person.EmailAddress</td>
                     <td>@person.PhoneNumber</td>
-                    <td>@person.LastSeenTimestamp</td>
+                    <td>@(person.LastSeenTimestamp.HasValue ? person.LastSeenTimestamp.Value.ToString("dd/MM/yyyy") : "Never")</td>
                     <td>Edit | Delete | Assign Token</td>
                 </tr>
             }

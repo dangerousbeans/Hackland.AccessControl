@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model CreatePersonViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Create Person";
+}
+
+<h3>Create person</h3>
+<form action="Create" class="mt-5" method="post" novalidate>
+    <input asp-for="Mode" type="hidden" />
+    <partial name="_EditFieldsPartial" />
+</form>

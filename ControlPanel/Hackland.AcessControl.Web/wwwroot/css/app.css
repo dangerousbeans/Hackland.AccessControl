@@ -59,6 +59,10 @@ body.login .form-signin input[type="password"] {
   top: 10px;
   right: 5px;
 }
+.col-sm-10 .field-validation-error {
+  top: 5px;
+  right: 25px;
+}
 .validation-summary-errors {
   text-align: left;
   background-color: #cc0000;
