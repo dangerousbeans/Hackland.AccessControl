@@ -82,15 +82,15 @@ namespace Hackland.AccessControl.Web.Controllers
             string oldName = item.Name;
             if (!string.Equals(binding.Name, oldName))
             {
-            binding.ConvertTo<Door>(item);
+                binding.ConvertTo<Door>(item);
 
-            BindMetadataFields(item, binding.Mode);
+                BindMetadataFields(item, binding.Mode);
 
-            DataContext.SaveChanges();
+                DataContext.SaveChanges();
 
                 AddSuccess("Success", "Updated door name from {0} to {1}", oldName, binding.Name);
             }
-            
+
             return RedirectToAction("Index");
         }
 
@@ -149,12 +149,12 @@ namespace Hackland.AccessControl.Web.Controllers
                 .ToList();
 
             //this is kinda bad (N+1 query) but ef core is not mature and let expressions are failing
-            foreach(var read in recentItems)
+            foreach (var read in recentItems)
             {
                 var tokenValue = read.TokenValue;
                 var tokenCurrentlyAllocatedTo = DataContext.People.FirstOrDefault(ip => ip.TokenValue == tokenValue);
 
-                if(tokenCurrentlyAllocatedTo == null)
+                if (tokenCurrentlyAllocatedTo == null)
                 {
                     //token is not currently assigned to anyone
                     read.IsTokenUnallocated = true;
@@ -163,9 +163,9 @@ namespace Hackland.AccessControl.Web.Controllers
                 }
                 else
                 {
-                    
+
                     //token is currently assigned to someone
-                    if(tokenCurrentlyAllocatedTo.Id == read.Person.Id)
+                    if (tokenCurrentlyAllocatedTo.Id == read.Person.Id)
                     {
                         //same person
                         read.IsTokenReallocated = false;
@@ -204,8 +204,72 @@ namespace Hackland.AccessControl.Web.Controllers
 
             DataContext.SaveChanges();
 
+            AddSuccess("Dissociated", "Cleared access token stored against {0}", read.Person.Name);
+
             return RedirectToAction("Log", new { Id = read.DoorId });
 
+        }
+
+        [HttpGet]
+        public IActionResult Assign(int id)
+        {
+            var read = DataContext.DoorReads
+                .Include(dr => dr.Person)
+                .Include(dr => dr.Door)
+                .FirstOrDefault(dr => dr.Id == id);
+
+            if (read == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            AssociateDoorRequestViewModel model = GetAssociateDoorRequestModel(read);
+            return View(model);
+
+        }
+
+        private AssociateDoorRequestViewModel GetAssociateDoorRequestModel(DoorRead read)
+        {
+            return new AssociateDoorRequestViewModel
+            {
+                DoorReadId = read.Id,
+                DoorId = read.DoorId,
+                Timestamp = read.Timestamp,
+                DoorName = read.Door.Name == "Unknown" ? read.Door.MacAddress : read.Door.Name,
+                TokenValue = read.TokenValue,
+                AvailablePeople = DataContext.People
+                                .Where(p => !p.IsDeleted && (p.TokenValue == null || p.TokenValue == string.Empty))
+                                .OrderBy(p => p.Name)
+                                .Select(p => new SelectListItem
+                                {
+                                    Text = p.Name,
+                                    Value = p.Id.ToString()
+                                })
+                                .ToList()
+            };
+        }
+
+        [HttpPost]
+        public IActionResult Assign(AssociateDoorResponseViewModel model)
+        {
+            var person = DataContext.People.FirstOrDefault(p => p.Id == model.PersonId);
+            var read = DataContext.DoorReads.Include(dr => dr.Door).Include(dr => dr.Person).First(dr => dr.Id == model.DoorReadId);
+            if (!ModelState.IsValid)
+            {
+                AssociateDoorRequestViewModel requestModel = GetAssociateDoorRequestModel(read);
+                return View(requestModel);
+            }
+
+            //set token value on the person
+            person.TokenValue = read.TokenValue;
+            //set the person on the read
+            read.Person = person;
+
+            DataContext.SaveChanges();
+
+            AddSuccess("Associated", "Assigned access token to {0}", read.Person.Name);
+
+            return RedirectToAction("Log", new { Id = read.DoorId });
         }
     }
 }

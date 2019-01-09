@@ -1,0 +1,23 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model AssociateDoorRequestViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Associate";
+}
+<partial name="_Message" />
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Associate token</h5>
+        <p class="card-text">
+            Associate the token value <span class="badge badge-light">@Model.TokenValue</span> scanned at door <span class="badge badge-light">@Model.DoorName</span> to a user.<br />
+        </p>
+    </div>
+</div>
+
+<form action="Associate" class="mt-5" method="post" novalidate>
+
+    <input asp-for="DoorReadId" type="hidden" />
+
+    <partial name="_AssignFieldsPartial" model="new AssociateDoorResponseViewModel{ AvailablePeople = Model.AvailablePeople, DoorId = Model.DoorId } " />
+</form>

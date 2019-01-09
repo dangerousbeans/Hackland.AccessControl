@@ -1,4 +1,4 @@
-﻿body {
+body {
   padding-top: 70px;
 }
 body.login {
@@ -62,6 +62,9 @@ body.login .form-signin input[type="password"] {
 .col-sm-10 .field-validation-error {
   top: 5px;
   right: 25px;
+}
+select + .field-validation-error {
+  right: 35px !important;
 }
 .validation-summary-errors {
   text-align: left;

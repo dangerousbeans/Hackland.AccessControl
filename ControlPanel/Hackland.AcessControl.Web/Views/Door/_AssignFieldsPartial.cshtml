@@ -1,0 +1,23 @@
+﻿@model AssociateDoorResponseViewModel
+
+<div class="form-group row">
+    <label asp-for="PersonId" class="col-sm-2 control-label"></label>
+    <div class="col-sm-10 field-group">
+        <select asp-for="PersonId" asp-items="Model.AvailablePeople" class="form-control">
+            <option value="">Please select...</option>
+        </select>
+        <span asp-validation-for="PersonId"></span>
+    </div>
+</div>
+
+<input type="hidden" asp-for="DoorId" />
+
+<hr class="mt-5" />
+<div class="row">
+    <div class="col-sm-1">
+        <input type="submit" class="btn btn-primary" value="Save" />
+    </div>
+    <div class="col-sm-1">
+        <a href="/door/log/@Model.DoorId" class="text-secondary">Cancel</a>
+    </div>
+</div>
