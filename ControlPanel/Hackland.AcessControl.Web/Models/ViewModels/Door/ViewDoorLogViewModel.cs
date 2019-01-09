@@ -10,5 +10,7 @@ namespace Hackland.AccessControl.Web.Models.ViewModels
         public int Id { get; set; }
         public string Name { get; set; }
         public string MacAddress { get; set; }
+
+        public List<ViewDoorLogItemViewModel> RecentItems { get; set; }
     }
 }
