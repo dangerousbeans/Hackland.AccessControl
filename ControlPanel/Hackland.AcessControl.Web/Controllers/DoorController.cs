@@ -5,8 +5,10 @@ using Hackland.AccessControl.Web.Models.Api;
 using Hackland.AccessControl.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -76,13 +78,19 @@ namespace Hackland.AccessControl.Web.Controllers
              .Where(p => p.Id == binding.Id)
              .Select(p => p)
              .FirstOrDefault();
+
+            string oldName = item.Name;
+            if (!string.Equals(binding.Name, oldName))
+            {
             binding.ConvertTo<Door>(item);
 
             BindMetadataFields(item, binding.Mode);
 
             DataContext.SaveChanges();
 
-            AddSuccess("Success", "Updated door {0}", item.Name);
+                AddSuccess("Success", "Updated door name from {0} to {1}", oldName, binding.Name);
+            }
+            
             return RedirectToAction("Index");
         }
 
