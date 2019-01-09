@@ -110,12 +110,32 @@ namespace Hackland.AccessControl.Web.Controllers
         public IActionResult Log(int id)
         {
             var item = DataContext.Doors
-                .Include(d => d.PersonDoors)
+                .Include(d => d.DoorReads)
+                .ThenInclude(dr => dr.Person)
                 .Where(p => p.Id == id)
                 .Select(p => p)
                 .FirstOrDefault();
 
             var model = item.ConvertTo<ViewDoorLogViewModel>();
+
+            var recentItems = item.DoorReads
+                .OrderByDescending(dr => dr.Timestamp)
+                .Take(20)
+                .Select(dr => new ViewDoorLogItemViewModel
+                {
+                    Id = dr.Id,
+                    IsSuccess = dr.IsSuccess,
+                    Timestamp = dr.Timestamp,
+                    Person = dr.Person != null ? new Models.Api.ViewDoorLogItemPersonViewModel
+                    {
+                        Id = dr.Person.Id,
+                        EmailAddress = dr.Person.EmailAddress,
+                        Name = dr.Person.Name
+                    } : null
+                })
+                .ToList();
+
+            model.RecentItems = recentItems;
 
             return View(model);
 

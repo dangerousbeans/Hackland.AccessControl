@@ -4,6 +4,73 @@
 @{
     ViewData["Title"] = "Door Log";
 }
-<h3>Access log for door @(string.Equals(Model.Name, "unknown", StringComparison.InvariantCultureIgnoreCase) ? Model.MacAddress: Model.Name)</h3>
+<h3>Access log for door @(string.Equals(Model.Name, "unknown", StringComparison.InvariantCultureIgnoreCase) ? Model.MacAddress : Model.Name)</h3>
 <partial name="_Message" />
 
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Access log</h5>
+        <p class="card-text">
+            When RFID tokens are scanned at doors, they are automatically recorded here.<br />
+        </p>
+        <ul>
+            <li>The last 20 reads are shown in descending order (most recent first).</li>
+            <li>If the token matches a person, the person details will be shown below.</li>
+            <li>If the token matches a person but they do not have access to the door it will show with the person's name but without success.</li>
+            <li>If the token does not match a person, you can assign it to a person from this screen.</li>
+            <li>If you are trying to assign a new person, scan the unassigned token at the door then view this list and use the button in the person column or access the assign dialog from the person list.</li>
+        </ul>
+    </div>
+</div>
+
+<br /><br />
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Person</th>
+            <th scope="col">Success</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.RecentItems.Any())
+        {
+            <tr>
+                <td colspan="5">There have been no scans recorded for this door.</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var read in Model.RecentItems)
+            {
+                <tr>
+                    <th scope="row">@read.Id</th>
+                    <td>
+                        @read.Timestamp.ToLongDateString()
+                        <br />
+                        @read.Timestamp.ToShortTimeString()
+                    </td>
+                    <td>
+                        @if (read.Person != null)
+                        {
+                            <gravatar email="@read.Person.EmailAddress" size="32"></gravatar>
+                            <a href="/person/@read.Person.Id">@read.Person.Name</a>
+                            <a href="/door/disassociate/@read.Id" class="btn-sm btn btn-dark">Dissociate</a>
+                        }
+                        else
+                        {
+                            <text>Unknown</text>
+                            <a href="/door/assign/@read.Id" class="btn-sm btn-dark">Assign</a>
+                        }
+                    </td>
+                <td>
+                    <span class="badge badge-@(read.IsSuccess ? "success" : "danger")">@(read.IsSuccess ? "Access granted" : "Restricted")</span>
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
