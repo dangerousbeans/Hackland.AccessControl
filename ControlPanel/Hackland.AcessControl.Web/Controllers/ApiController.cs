@@ -87,12 +87,19 @@ namespace Hackland.AccessControl.Web.Controllers
                     Timestamp = DateTime.Now,
                     TokenValue = model.TokenValue
                 };
-                DataContext.DoorReads.Add(read);
+                var lastRead = DataContext.DoorReads.OrderByDescending(dr => dr.Timestamp).FirstOrDefault();
+                
+                //if the last read is for the same token and it was under a minute ago, don't log again
+                if (lastRead == null || lastRead.TokenValue != model.TokenValue || (DateTime.Now - lastRead.Timestamp) > TimeSpan.FromMinutes(1) )
+                {
+                    DataContext.DoorReads.Add(read);
+                }
+
                 DataContext.SaveChanges();
 
                 var doorReadId = read.Id;
 
-                if(person != null)
+                if (person != null)
                 {
                     person.LastSeenTimestamp = DateTime.Now;
                 }
