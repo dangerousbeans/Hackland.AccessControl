@@ -136,17 +136,7 @@ namespace Hackland.AccessControl.Web.Controllers
                                        EmailAddress = person.EmailAddress,
                                        Name = person.Name,
                                        IsDeleted = person.IsDeleted
-                                   } : null,
-                                   //IsTokenStillValid = isTokenStillValid != null,
-                                   //IsTokenReallocated = isTokenReallocated != null,
-                                   //TokenReallocatedTo = isTokenReallocated != null ? new Models.Api.ViewDoorLogItemPersonViewModel
-                                   //{
-                                   //    Id = isTokenReallocated.Id,
-                                   //    EmailAddress = isTokenReallocated.EmailAddress,
-                                   //    Name = isTokenReallocated.Name,
-                                   //    IsDeleted = isTokenReallocated.IsDeleted
-                                   //} : null,
-                                   //IsTokenUnallocated = isTokenUnallocated
+                                   } : null
                                })
                 .ToList();
 
