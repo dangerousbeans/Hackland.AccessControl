@@ -163,9 +163,8 @@ namespace Hackland.AccessControl.Web.Controllers
                 }
                 else
                 {
-
                     //token is currently assigned to someone
-                    if (tokenCurrentlyAllocatedTo.Id == read.Person.Id)
+                    if (read.Person != null && tokenCurrentlyAllocatedTo.Id == read.Person.Id)
                     {
                         //same person
                         read.IsTokenReallocated = false;
@@ -174,10 +173,19 @@ namespace Hackland.AccessControl.Web.Controllers
                     }
                     else
                     {
-                        read.IsTokenReallocated = true;
-                        read.IsTokenStillValid = false;
-                        read.IsTokenUnallocated = false;
-                        read.TokenReallocatedTo = tokenCurrentlyAllocatedTo.ConvertTo<ViewDoorLogItemPersonViewModel>();
+                        if (read.Person == null)
+                        {
+                            read.IsTokenReallocated = false;
+                            read.IsTokenStillValid = false;
+                            read.IsTokenUnallocated = false;
+                        }
+                        else
+                        {
+                            read.IsTokenReallocated = true;
+                            read.IsTokenStillValid = false;
+                            read.IsTokenUnallocated = false;
+                            read.TokenReallocatedTo = tokenCurrentlyAllocatedTo.ConvertTo<ViewDoorLogItemPersonViewModel>();
+                        }
                     }
                 }
             }
