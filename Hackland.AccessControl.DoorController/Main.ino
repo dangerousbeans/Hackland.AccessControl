@@ -16,7 +16,7 @@
 #define SS_PIN 4
 #define RST_PIN 5
 const int RELAY_PIN = D8;
-const bool debugRfid = true;
+
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 ESP8266WiFiMulti wifiMulti;       // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
@@ -38,7 +38,10 @@ Once the tunnel is defined, you'll need to "ngrok start accesscontrol"
 Note: i'm using a license for ngrok, if you use the free version you can't customise the subdomain and will get a random one each time
 */
 const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.au.ngrok.io/api/";
-const bool debugHttp = true;
+const bool debugHttp = false;
+const bool debugValidate = true;
+const bool debugApiRegister = false;
+const bool debugRfid = true;
 
 // the setup function runs once when you press reset or power the board
 void setup()
@@ -154,6 +157,12 @@ void readRfidToSerial()
     Serial.print("UID tag:");
     Serial.println(content);
   }
+
+  bool unlock = sendApiValidate(content);
+  if (unlock)
+  {
+    unlockDoor(false);
+  }
 }
 
 void unlockDoor(bool permanent)
@@ -200,7 +209,10 @@ void initializeApi()
 
 void sendApiRegister()
 {
-  Serial.println(F("API Register"));
+  if(debugApiRegister)
+  {
+    Serial.println(F("API Register"));
+  }
 
   char url[64];
   strcpy(url, ApiBaseUrl);
@@ -221,7 +233,7 @@ void sendApiRegister()
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
 
-  if (debugHttp)
+  if (debugHttp && debugApiRegister)
   {
     Serial.print("Request ");
     Serial.println(url);
@@ -232,7 +244,7 @@ void sendApiRegister()
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
   String payload = http.getString();           //Get response
 
-  if (debugHttp)
+  if (debugHttp && debugApiRegister)
   {
     Serial.print("Response ");
     Serial.println(httpCode); //Print HTTP return code
@@ -240,4 +252,93 @@ void sendApiRegister()
     Serial.println(payload); //Print request response payload
   }
   http.end(); //Close connection
+}
+
+bool sendApiValidate(String tokenValue)
+{
+  if (debugValidate)
+  {
+    Serial.println(F("API Validate"));
+    Serial.print("Token value ");
+    Serial.println(tokenValue);
+  }
+
+  char url[64];
+  strcpy(url, ApiBaseUrl);
+  strcat(url, (const char *)F("door/validate"));
+
+  StaticJsonBuffer<300> JsonBuffer;
+  JsonObject &JsonEncoder = JsonBuffer.createObject();
+
+  //add properties like this
+  //https://techtutorialsx.com/2017/01/08/esp8266-posting-json-data-to-a-flask-server-on-the-cloud/
+  JsonEncoder["MacAddress"] = MacAddress;
+  JsonEncoder["TokenValue"] = tokenValue;
+
+  //debug
+  char JsonMessageBuffer[300];
+  JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
+
+  HTTPClient http;
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+
+  if (debugHttp && debugValidate) 
+  {
+    Serial.print("Request ");
+    Serial.println(url);
+    Serial.print("=> ");
+    Serial.println(JsonMessageBuffer);
+  }
+
+  int httpCode = http.POST(JsonMessageBuffer); //Send the request
+  const char * json = const_cast<char*>(http.getString().c_str());
+
+  if (debugHttp && debugValidate)
+  {
+    Serial.print("Response ");
+    Serial.println(httpCode); //Print HTTP return code
+    Serial.print("<= ");
+    Serial.println(json); //Print request response payload
+  }
+
+  const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(4) + 130;
+  DynamicJsonBuffer jsonBuffer(capacity);
+  JsonObject &root = jsonBuffer.parseObject(json);
+
+  bool isUnlockAllowed = root["isUnlockAllowed"]; // true
+  const char *message = root["message"];          // "Success"
+  int doorReadId = root["doorReadId"];            // 4
+
+  if (debugValidate)
+  {
+
+    Serial.print("Response ");
+    Serial.print(doorReadId);
+    Serial.print(" is allowed ");
+    Serial.print(isUnlockAllowed);
+    Serial.print(" with message ");
+    Serial.println(message);
+  }
+
+  JsonObject &matchedPerson = root["matchedPerson"];
+  if (matchedPerson.success())
+  {
+    int matchedPerson_id = matchedPerson["id"];                             // 8
+    const char *matchedPerson_emailAddress = matchedPerson["emailAddress"]; // "agrath@gmail.com"
+    const char *matchedPerson_name = matchedPerson["name"];                 // "Gareth Evans"
+
+    if (debugValidate)
+    {
+      Serial.print("Person ");
+      Serial.print(matchedPerson_name);
+      Serial.print(" (");
+      Serial.print(matchedPerson_id);
+      Serial.print(") - ");
+      Serial.println(matchedPerson_emailAddress);
+    }
+  }
+  http.end(); //Close connection
+
+  return isUnlockAllowed;
 }

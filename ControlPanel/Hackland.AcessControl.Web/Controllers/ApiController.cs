@@ -53,6 +53,8 @@ namespace Hackland.AccessControl.Web.Controllers
             if (string.IsNullOrEmpty(model.MacAddress)) return Json(new ValidateDoorUnlockResponseModel { IsUnlockAllowed = false, Message = "No device mac address provided" });
             if (string.IsNullOrEmpty(model.TokenValue)) return Json(new ValidateDoorUnlockResponseModel { IsUnlockAllowed = false, Message = "No scan token provided" });
 
+            if (model.TokenValue != null) model.TokenValue = model.TokenValue.Trim().ToUpper();
+
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 var door = DataContext.Doors.FirstOrDefault(d => d.MacAddress == model.MacAddress);
@@ -90,6 +92,13 @@ namespace Hackland.AccessControl.Web.Controllers
 
                 var doorReadId = read.Id;
 
+                if(person != null)
+                {
+                    person.LastSeenTimestamp = DateTime.Now;
+                }
+
+                scope.Complete();
+
                 if (person == null)
                 {
                     return Json(new ValidateDoorUnlockResponseModel
@@ -109,6 +118,7 @@ namespace Hackland.AccessControl.Web.Controllers
                         Message = "Success"
                     });
                 }
+
 
             }
         }
