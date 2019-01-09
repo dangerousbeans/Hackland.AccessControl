@@ -1,0 +1,9 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model ViewDoorLogViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Door Log";
+}
+<h3>Access log for door @(string.Equals(Model.Name, "unknown", StringComparison.InvariantCultureIgnoreCase) ? Model.MacAddress: Model.Name)</h3>
+<partial name="_Message" />
+

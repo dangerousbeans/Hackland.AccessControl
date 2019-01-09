@@ -106,5 +106,20 @@ namespace Hackland.AccessControl.Web.Controllers
 
         }
 
+        [HttpGet]
+        public IActionResult Log(int id)
+        {
+            var item = DataContext.Doors
+                .Include(d => d.PersonDoors)
+                .Where(p => p.Id == id)
+                .Select(p => p)
+                .FirstOrDefault();
+
+            var model = item.ConvertTo<ViewDoorLogViewModel>();
+
+            return View(model);
+
+        }
+
     }
 }
