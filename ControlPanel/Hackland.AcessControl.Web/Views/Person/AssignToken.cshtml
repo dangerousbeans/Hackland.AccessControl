@@ -1,0 +1,23 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model AssociatePersonRequestViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Associate";
+}
+<partial name="_Message" />
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Associate token</h5>
+        <p class="card-text">
+            Associate a token value to <span class="badge badge-light">@Model.PersonName</span>.<br />
+        </p>
+    </div>
+</div>
+
+<form action="/person/assign-token" class="mt-5" method="post" novalidate>
+
+    <input asp-for="PersonId" type="hidden" />
+
+    <partial name="_AssignFieldsPartial" model="new AssociatePersonResponseViewModel{ AvailableTokens = Model.AvailableTokens, PersonId = Model.PersonId } " />
+</form>

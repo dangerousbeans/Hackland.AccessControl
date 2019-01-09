@@ -178,5 +178,65 @@ namespace Hackland.AccessControl.Web.Controllers
             return RedirectToAction("Index");
 
         }
+
+        [HttpGet]
+        [Route("person/assign-token/{id}")]
+        public IActionResult AssignToken(int id)
+        {
+            var person = DataContext.People
+                .Where(p => !p.IsDeleted)
+                .FirstOrDefault(p => p.Id == id);
+
+            if (person == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            AssociatePersonRequestViewModel model = GetAssociatePersonRequestModel(person);
+            return View(model);
+
+        }
+
+        private AssociatePersonRequestViewModel GetAssociatePersonRequestModel(Person person)
+        {
+            return new AssociatePersonRequestViewModel
+            {
+                PersonId = person.Id,
+                PersonName = person.Name,
+                AvailableTokens = DataContext.DoorReads
+                                .Where(dr => dr.PersonId == null)
+                                .Include(dr => dr.Door)
+                                .OrderByDescending(dr => dr.Timestamp)
+                                .ToList()
+                                .GroupBy(dr => new { dr.TokenValue, DoorName = dr.Door.Name })
+                                .Select(dr => new SelectListItem
+                                {
+                                    Text = string.Format("{0} on {1} ({2:dd/MM/yyyy} {2:HH:mm})", dr.Key.TokenValue, dr.Key.DoorName, dr.FirstOrDefault().Timestamp),
+                                    Value = dr.Key.TokenValue
+                                })
+                                .ToList()
+            };
+        }
+
+        [HttpPost]
+        [Route("person/assign-token")]
+        public IActionResult AssignToken(AssociatePersonResponseViewModel model)
+        {
+            var person = DataContext.People.FirstOrDefault(p => p.Id == model.PersonId);
+
+            if (!ModelState.IsValid)
+            {
+                AssociatePersonRequestViewModel requestModel = GetAssociatePersonRequestModel(person);
+                return View(requestModel);
+            }
+
+            person.TokenValue = model.TokenValue;
+
+            DataContext.SaveChanges();
+
+            AddSuccess("Associated", "Assigned access token to {0}", person.Name);
+
+            return RedirectToAction("Index");
+        }
     }
 }

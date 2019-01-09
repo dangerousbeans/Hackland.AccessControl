@@ -60,7 +60,7 @@
                     <td>@(person.LastSeenTimestamp.HasValue ? person.LastSeenTimestamp.Value.ToString("dd/MM/yyyy") : "Never")</td>
                     <td>
                         <a href="/person/update/@person.Id" class="btn-sm btn-primary">Edit</a>
-                        @if (Model.IsAssignAvailable)
+                        @if (Model.IsAssignAvailable && string.IsNullOrEmpty(person.TokenValue))
                         {
                             <a href="/person/assign-token/@person.Id" class="btn-sm btn-secondary">Assign token</a>
                         }
