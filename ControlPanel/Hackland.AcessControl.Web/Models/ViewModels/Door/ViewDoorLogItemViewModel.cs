@@ -12,5 +12,10 @@ namespace Hackland.AccessControl.Web.Models.ViewModels
         public DateTime Timestamp { get; set; }
         public ViewDoorLogItemPersonViewModel Person { get; set; }
         public bool IsSuccess { get; set; }
+        public bool IsTokenStillValid { get; set; }
+        public bool IsTokenReallocated { get; set; }
+        public ViewDoorLogItemPersonViewModel TokenReallocatedTo { get; set; }
+        public bool IsTokenUnallocated { get; set; }
+        public string TokenValue { get; internal set; }
     }
 }

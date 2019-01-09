@@ -1,6 +1,7 @@
 ﻿using Hackland.AccessControl.Data;
 using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models;
+using Hackland.AccessControl.Web.Models.Api;
 using Hackland.AccessControl.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -118,22 +119,70 @@ namespace Hackland.AccessControl.Web.Controllers
 
             var model = item.ConvertTo<ViewDoorLogViewModel>();
 
-            var recentItems = item.DoorReads
-                .OrderByDescending(dr => dr.Timestamp)
-                .Take(20)
-                .Select(dr => new ViewDoorLogItemViewModel
-                {
-                    Id = dr.Id,
-                    IsSuccess = dr.IsSuccess,
-                    Timestamp = dr.Timestamp,
-                    Person = dr.Person != null ? new Models.Api.ViewDoorLogItemPersonViewModel
-                    {
-                        Id = dr.Person.Id,
-                        EmailAddress = dr.Person.EmailAddress,
-                        Name = dr.Person.Name
-                    } : null
-                })
+            var recentItems = (from dr in DataContext.DoorReads
+                               where dr.DoorId == item.Id
+                               join person in DataContext.People on dr.PersonId equals person.Id into person_loj
+                               from person in person_loj.DefaultIfEmpty()
+                               orderby dr.Timestamp descending
+                               select new ViewDoorLogItemViewModel
+                               {
+                                   Id = dr.Id,
+                                   IsSuccess = dr.IsSuccess,
+                                   Timestamp = dr.Timestamp,
+                                   TokenValue = dr.TokenValue,
+                                   Person = person != null ? new ViewDoorLogItemPersonViewModel
+                                   {
+                                       Id = person.Id,
+                                       EmailAddress = person.EmailAddress,
+                                       Name = person.Name,
+                                       IsDeleted = person.IsDeleted
+                                   } : null,
+                                   //IsTokenStillValid = isTokenStillValid != null,
+                                   //IsTokenReallocated = isTokenReallocated != null,
+                                   //TokenReallocatedTo = isTokenReallocated != null ? new Models.Api.ViewDoorLogItemPersonViewModel
+                                   //{
+                                   //    Id = isTokenReallocated.Id,
+                                   //    EmailAddress = isTokenReallocated.EmailAddress,
+                                   //    Name = isTokenReallocated.Name,
+                                   //    IsDeleted = isTokenReallocated.IsDeleted
+                                   //} : null,
+                                   //IsTokenUnallocated = isTokenUnallocated
+                               })
                 .ToList();
+
+            //this is kinda bad (N+1 query) but ef core is not mature and let expressions are failing
+            foreach(var read in recentItems)
+            {
+                var tokenValue = read.TokenValue;
+                var tokenCurrentlyAllocatedTo = DataContext.People.FirstOrDefault(ip => ip.TokenValue == tokenValue);
+
+                if(tokenCurrentlyAllocatedTo == null)
+                {
+                    //token is not currently assigned to anyone
+                    read.IsTokenUnallocated = true;
+                    read.IsTokenStillValid = false;
+                    read.IsTokenReallocated = false;
+                }
+                else
+                {
+                    
+                    //token is currently assigned to someone
+                    if(tokenCurrentlyAllocatedTo.Id == read.Person.Id)
+                    {
+                        //same person
+                        read.IsTokenReallocated = false;
+                        read.IsTokenStillValid = true;
+                        read.IsTokenUnallocated = false;
+                    }
+                    else
+                    {
+                        read.IsTokenReallocated = true;
+                        read.IsTokenStillValid = false;
+                        read.IsTokenUnallocated = false;
+                        read.TokenReallocatedTo = tokenCurrentlyAllocatedTo.ConvertTo<ViewDoorLogItemPersonViewModel>();
+                    }
+                }
+            }
 
             model.RecentItems = recentItems;
 

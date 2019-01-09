@@ -57,20 +57,44 @@
                         @if (read.Person != null)
                         {
                             <gravatar email="@read.Person.EmailAddress" size="32"></gravatar>
-                            <a href="/person/@read.Person.Id">@read.Person.Name</a>
-                            <a href="/door/disassociate/@read.Id" class="btn-sm btn btn-dark">Dissociate</a>
+                            @if (!read.Person.IsDeleted)
+                            {
+                                <a href="/person/@read.Person.Id">@read.Person.Name</a>
+                            }
+                            else
+                            {
+                                @read.Person.Name
+                            }
+                            @if (!read.IsTokenReallocated && read.IsTokenStillValid)
+                            {
+                                <a href="/door/disassociate/@read.Id" class="btn-sm btn btn-dark">Dissociate</a>
+                            }
+                            else
+                            {
+                                @if (read.IsTokenReallocated)
+                                {
+                                    <span class="badge badge-light" data-balloon="The token has been reallocated to @read.TokenReallocatedTo.Name" data-baloon-pos="right">Reallocated</span>
+                                }
+                                @if (!read.IsTokenStillValid && !read.IsTokenReallocated)
+                                {
+                                    <span class="badge badge-light">No longer assigned</span>
+                                }
+                            }
                         }
                         else
                         {
                             <text>Unknown</text>
-                            <a href="/door/assign/@read.Id" class="btn-sm btn-dark">Assign</a>
+                            @if (!read.IsTokenReallocated && read.IsTokenUnallocated)
+                            {
+                                <a href="/door/assign/@read.Id" class="btn-sm btn-dark">Assign</a>
+                            }
                         }
                     </td>
-                <td>
-                    <span class="badge badge-@(read.IsSuccess ? "success" : "danger")">@(read.IsSuccess ? "Access granted" : "Restricted")</span>
-                </td>
-            </tr>
+                    <td>
+                        <span class="badge badge-@(read.IsSuccess ? "success" : "danger")">@(read.IsSuccess ? "Access granted" : "Restricted")</span>
+                    </td>
+                </tr>
+            }
         }
-    }
     </tbody>
 </table>
