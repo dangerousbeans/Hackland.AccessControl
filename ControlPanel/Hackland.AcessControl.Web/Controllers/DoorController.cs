@@ -190,5 +190,24 @@ namespace Hackland.AccessControl.Web.Controllers
 
         }
 
+        [HttpGet]
+        public IActionResult Disassociate(int id)
+        {
+            var read = DataContext.DoorReads
+                .Include(dr => dr.Person)
+                .FirstOrDefault(dr => dr.Id == id);
+
+            if (read == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            read.Person.TokenValue = null;
+
+            DataContext.SaveChanges();
+
+            return RedirectToAction("Log", new { Id = read.DoorId });
+
+        }
     }
 }
