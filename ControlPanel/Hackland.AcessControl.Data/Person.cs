@@ -23,5 +23,7 @@ namespace Hackland.AccessControl.Data
         public virtual User CreatedByUser { get; set; }
         public virtual User UpdatedByUser { get; set; }
         public List<DoorRead> DoorReads { get; set; }
+
+        public string TokenValue { get; set; }
     }
 }

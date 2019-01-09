@@ -10,6 +10,7 @@ namespace Hackland.AccessControl.Data
         public DbSet<Door> Doors { get; set; }
         public DbSet<Person> People { get; set; }
         public DbSet<DoorRead> DoorReads { get; set; }
+        public DbSet<PersonDoor> PeopleDoors { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
