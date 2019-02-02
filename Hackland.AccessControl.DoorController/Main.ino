@@ -1,3 +1,5 @@
+#include <Adafruit_MCP23008.h>
+
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 
@@ -12,8 +14,9 @@
 #include <ArduinoJson.h>
 //from github, https://github.com/schinken/SimpleTimer, download the cpp and h files (raw) and place into a folder named "SimpleTimer" in the arduino libraries folder
 #include <SimpleTimer.h>
+#include <Wire.h>
 
-#define SS_PIN 4 //D2
+#define SS_PIN 4  //D2
 #define RST_PIN 5 //D1
 const int RELAY_PIN = D8;
 const int REED_PIN = D3;
@@ -22,13 +25,14 @@ bool lockReedStatus = false;    //false = magnet present, true = magnet not foun
 bool lockMagBondStatus = false; //false = bonded, true = bond not detected
 bool lockTriggerStatus = true;  //true = power is on for lock (should be locked), false = power is off for lock (should be unlocked)
 bool a0State = false;
-bool d8State = false;
+bool mcpD0State = false;
 
 char strBuffer[10]; //small char buffer for sprintf use
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 ESP8266WiFiMulti wifiMulti;       // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 SimpleTimer timer;                //a timer object to handle periodic tasks without blocking delay()
+Adafruit_MCP23008 mcp;
 
 const int ApiRegisterFrequencyMs = 2000;
 /*
@@ -49,9 +53,9 @@ const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.au.ngrok.io/api/";
 const bool debugHttp = false;
 const bool debugValidate = false;
 const bool debugApiRegister = false;
-const bool debugRfid = true;
-const bool debugLockStatus = false;
-const bool debugWifi = false;
+const bool debugRfid = false;
+const bool debugLockStatus = true;
+const bool debugWifi = true;
 
 // the setup function runs once when you press reset or power the board
 void setup()
@@ -59,10 +63,16 @@ void setup()
   initializeLockStatus();
   initializeStatusLed();
   initializeSerial();
+  initializeGpio();
   initializeWifi();
   initializeRfidReader();
   initializeApi();
 }
+void initializeGpio()
+{
+  mcp.pinMode(0, INPUT);
+}
+
 void initializeSerial()
 {
   Serial.begin(115200);
@@ -94,7 +104,7 @@ void initializeLockStatus()
   lockReedStatus = (digitalRead(REED_PIN) == HIGH);
   lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
   a0State = (digitalRead(A0) == HIGH);
-  d8State = (digitalRead(D8) == HIGH);
+  mcpD0State = (digitalRead(D8) == HIGH);
   timer.setInterval(200, readLockStatus);
 }
 
@@ -103,8 +113,8 @@ void readLockStatus()
 {
   lockReedStatus = (digitalRead(REED_PIN) == HIGH);
   lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
-  a0State = (digitalRead(A0) == HIGH);
-  d8State = (digitalRead(D8) == HIGH);
+  //a0State = (digitalRead(A0) == HIGH);
+  mcpD0State = (mcp.digitalRead(0) == HIGH);
   if (debugLockStatus)
   {
     Serial.print(F("Reading lock status ("));
@@ -116,10 +126,10 @@ void readLockStatus()
     Serial.print(lockReedStatus);
     Serial.print(F(" Magnetic bond "));
     Serial.print(lockMagBondStatus);
-    Serial.print(F(" AO "));
-    Serial.print(a0State);
-    Serial.print(F(" D8 "));
-    Serial.println(d8State);
+    //Serial.print(F(" AO "));
+    //Serial.print(a0State);
+    Serial.print(F(" MCP_D0 "));
+    Serial.println(mcpD0State);
   }
 }
 
@@ -132,6 +142,8 @@ void initializeWifi()
 
   wifiMulti.addAP((const char *)F("MyRepublic C34D"), (const char *)F("mkv2q923t3"));
   wifiMulti.addAP((const char *)F("Hackland"), (const char *)F("hackland1"));
+  wifiMulti.addAP((const char *)F("Hackland++ 2G"), (const char *)F("hackland1"));
+  
   while (wifiMulti.run() != WL_CONNECTED)
   {
     // Wait for the Wi-Fi to connect
