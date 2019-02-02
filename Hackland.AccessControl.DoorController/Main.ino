@@ -13,10 +13,18 @@
 //from github, https://github.com/schinken/SimpleTimer, download the cpp and h files (raw) and place into a folder named "SimpleTimer" in the arduino libraries folder
 #include <SimpleTimer.h>
 
-#define SS_PIN 4
-#define RST_PIN 5
+#define SS_PIN 4 //D2
+#define RST_PIN 5 //D1
 const int RELAY_PIN = D8;
+const int REED_PIN = D3;
+const int MAGBOND_PIN = D4;
+bool lockReedStatus = false;    //false = magnet present, true = magnet not found
+bool lockMagBondStatus = false; //false = bonded, true = bond not detected
+bool lockTriggerStatus = true;  //true = power is on for lock (should be locked), false = power is off for lock (should be unlocked)
+bool a0State = false;
+bool d8State = false;
 
+char strBuffer[10]; //small char buffer for sprintf use
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 ESP8266WiFiMulti wifiMulti;       // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
@@ -39,13 +47,16 @@ Note: i'm using a license for ngrok, if you use the free version you can't custo
 */
 const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.au.ngrok.io/api/";
 const bool debugHttp = false;
-const bool debugValidate = true;
+const bool debugValidate = false;
 const bool debugApiRegister = false;
 const bool debugRfid = true;
+const bool debugLockStatus = false;
+const bool debugWifi = false;
 
 // the setup function runs once when you press reset or power the board
 void setup()
 {
+  initializeLockStatus();
   initializeStatusLed();
   initializeSerial();
   initializeWifi();
@@ -73,31 +84,83 @@ void initializeStatusLed()
   pinMode(RELAY_PIN, OUTPUT);
 }
 
+void initializeLockStatus()
+{
+  Serial.println(F("Initializing lock status..."));
+  pinMode(REED_PIN, INPUT);
+  pinMode(MAGBOND_PIN, INPUT);
+  pinMode(A0, INPUT);
+  pinMode(D8, INPUT);
+  lockReedStatus = (digitalRead(REED_PIN) == HIGH);
+  lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
+  a0State = (digitalRead(A0) == HIGH);
+  d8State = (digitalRead(D8) == HIGH);
+  timer.setInterval(200, readLockStatus);
+}
+
+int LockReadAttemptNumber = 0;
+void readLockStatus()
+{
+  lockReedStatus = (digitalRead(REED_PIN) == HIGH);
+  lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
+  a0State = (digitalRead(A0) == HIGH);
+  d8State = (digitalRead(D8) == HIGH);
+  if (debugLockStatus)
+  {
+    Serial.print(F("Reading lock status ("));
+    sprintf(strBuffer, "%06d", LockReadAttemptNumber++);
+    Serial.print(strBuffer);
+    Serial.print(F(") Lock powered "));
+    Serial.print(lockTriggerStatus);
+    Serial.print(F(" Reed detects door "));
+    Serial.print(lockReedStatus);
+    Serial.print(F(" Magnetic bond "));
+    Serial.print(lockMagBondStatus);
+    Serial.print(F(" AO "));
+    Serial.print(a0State);
+    Serial.print(F(" D8 "));
+    Serial.println(d8State);
+  }
+}
+
 void initializeWifi()
 {
-  Serial.println(F("Initializing Wifi..."));
+  if (debugWifi)
+  {
+    Serial.println(F("Initializing Wifi..."));
+  }
+
   wifiMulti.addAP((const char *)F("MyRepublic C34D"), (const char *)F("mkv2q923t3"));
   wifiMulti.addAP((const char *)F("Hackland"), (const char *)F("hackland1"));
   while (wifiMulti.run() != WL_CONNECTED)
   {
     // Wait for the Wi-Fi to connect
-    Serial.print('.');
+    if (debugWifi)
+    {
+      Serial.print('.');
+    }
     delay(1000);
   }
 
-  Serial.print(F("Connected to "));
-  Serial.println(WiFi.SSID()); // Tell us what network we're connected to
-  Serial.println(F("Connection established!"));
-  Serial.print(F("IP: "));
-  Serial.println(WiFi.localIP());
+  if (debugWifi)
+  {
+    Serial.print(F("Connected to "));
+    Serial.println(WiFi.SSID()); // Tell us what network we're connected to
+    Serial.println(F("Connection established!"));
+    Serial.print(F("IP: "));
+    Serial.println(WiFi.localIP());
+  }
 }
 
 void initializeRfidReader()
 {
-  SPI.begin();                       // Init SPI bus
-  mfrc522.PCD_Init();                // Init MFRC522
-  mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD - MFRC522 Card Reader details
-  Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
+  SPI.begin();        // Init SPI bus
+  mfrc522.PCD_Init(); // Init MFRC522
+  if (debugRfid)
+  {
+    mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD - MFRC522 Card Reader details
+    Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
+  }
   timer.setInterval(500, readRfidToSerial);
 }
 void loop()
@@ -105,13 +168,13 @@ void loop()
   timer.run();
 }
 
-int attempt = 0;
+int RFIDReadAttemptNumber = 0;
 void readRfidToSerial()
 {
   if (debugRfid)
   {
     Serial.print(F("Read RFID ("));
-    Serial.print(attempt++);
+    sprintf(strBuffer, "%06d", RFIDReadAttemptNumber++);
     Serial.println(F(")"));
   }
 
@@ -169,7 +232,7 @@ void unlockDoor(bool permanent)
 {
   digitalWrite(RELAY_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
-
+  lockTriggerStatus = false;
   if (!permanent)
   {
     //call lockDoor in 5 sec
@@ -181,6 +244,7 @@ void lockDoor()
 {
   digitalWrite(RELAY_PIN, LOW);
   digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
+  lockTriggerStatus = true;
 }
 
 uint8_t MacAddressBytes[6];
@@ -209,7 +273,7 @@ void initializeApi()
 
 void sendApiRegister()
 {
-  if(debugApiRegister)
+  if (debugApiRegister)
   {
     Serial.println(F("API Register"));
   }
@@ -283,7 +347,7 @@ bool sendApiValidate(String tokenValue)
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
 
-  if (debugHttp && debugValidate) 
+  if (debugHttp && debugValidate)
   {
     Serial.print("Request ");
     Serial.println(url);
@@ -292,7 +356,7 @@ bool sendApiValidate(String tokenValue)
   }
 
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
-  const char * json = const_cast<char*>(http.getString().c_str());
+  const char *json = const_cast<char *>(http.getString().c_str());
 
   if (debugHttp && debugValidate)
   {
