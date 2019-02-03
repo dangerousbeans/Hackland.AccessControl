@@ -25,14 +25,12 @@
 
 #define SS_PIN 4  //D2
 #define RST_PIN 5 //D1
-const int RELAY_PIN = D8;
-const int REED_PIN = D3;
-const int MAGBOND_PIN = D4;
+const int RELAY_PIN = 2; 
+const int REED_PIN = 0;
+const int MAGBOND_PIN = 1;
 bool lockReedStatus = false;    //false = magnet present, true = magnet not found
 bool lockMagBondStatus = false; //false = bonded, true = bond not detected
 bool lockTriggerStatus = true;  //true = power is on for lock (should be locked), false = power is off for lock (should be unlocked)
-bool a0State = false;
-bool mcpD0State = false;
 
 char strBuffer[10]; //small char buffer for sprintf use
 
@@ -79,8 +77,11 @@ void setup()
 void initializeGpio()
 {
   mcp.begin(D3, D4);
-  mcp.pinMode(0, INPUT);
-  mcp.pullUp(0, HIGH);
+  mcp.pinMode(REED_PIN, INPUT);
+  mcp.pullUp(REED_PIN, HIGH);
+  mcp.pinMode(MAGBOND_PIN, INPUT);
+  mcp.pullUp(MAGBOND_PIN, HIGH);
+  mcp.pinMode(RELAY_PIN, OUTPUT);
 }
 
 void initializeSerial()
@@ -101,27 +102,22 @@ void initializeStatusLed()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
-  pinMode(RELAY_PIN, OUTPUT);
+  //pinMode(RELAY_PIN, OUTPUT);
 }
 
 void initializeLockStatus()
 {
   Serial.println(F("Initializing lock status..."));
-  //pinMode(REED_PIN, INPUT);
-  //pinMode(MAGBOND_PIN, INPUT);
-  //lockReedStatus = (digitalRead(REED_PIN) == HIGH);
-  //lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
-  mcpD0State = (mcp.digitalRead(0) == HIGH);
+  lockReedStatus = (mcp.digitalRead(REED_PIN) == LOW);
+  lockMagBondStatus = (mcp.digitalRead(MAGBOND_PIN) == LOW);
   timer.setInterval(200, readLockStatus);
 }
 
 int LockReadAttemptNumber = 0;
 void readLockStatus()
 {
-  //lockReedStatus = (digitalRead(REED_PIN) == HIGH);
-  //lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
-  //a0State = (digitalRead(A0) == HIGH);
-  mcpD0State = (mcp.digitalRead(0) == HIGH);
+  lockReedStatus = (mcp.digitalRead(REED_PIN) == LOW);
+  lockMagBondStatus = (mcp.digitalRead(MAGBOND_PIN) == LOW);
   if (debugLockStatus)
   {
     Serial.print(F("Reading lock status ("));
@@ -129,12 +125,10 @@ void readLockStatus()
     Serial.print(strBuffer);
     Serial.print(F(") Lock powered "));
     Serial.print(lockTriggerStatus);
-    //Serial.print(F(" Reed detects door "));
-    //Serial.print(lockReedStatus);
-    //Serial.print(F(" Magnetic bond "));
-    //Serial.print(lockMagBondStatus);
-    Serial.print(F(" MCP_D0 "));
-    Serial.println(mcpD0State);
+    Serial.print(F(" Reed detects door "));
+    Serial.print(lockReedStatus);
+    Serial.print(F(" Magnetic bond "));
+    Serial.println(lockMagBondStatus);
   }
 }
 
@@ -247,7 +241,7 @@ void readRfidToSerial()
 
 void unlockDoor(bool permanent)
 {
-  digitalWrite(RELAY_PIN, HIGH);
+  mcp.digitalWrite(RELAY_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
   lockTriggerStatus = false;
   if (!permanent)
@@ -259,7 +253,7 @@ void unlockDoor(bool permanent)
 
 void lockDoor()
 {
-  digitalWrite(RELAY_PIN, LOW);
+  mcp.digitalWrite(RELAY_PIN, LOW);
   digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
   lockTriggerStatus = true;
 }
