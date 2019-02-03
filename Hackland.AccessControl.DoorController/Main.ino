@@ -1,4 +1,3 @@
-#include <Adafruit_MCP23008.h>
 
 #include <ESP8266WiFi.h>
 #include <SPI.h>
@@ -14,6 +13,14 @@
 #include <ArduinoJson.h>
 //from github, https://github.com/schinken/SimpleTimer, download the cpp and h files (raw) and place into a folder named "SimpleTimer" in the arduino libraries folder
 #include <SimpleTimer.h>
+
+//from the library manager, search for mcp23008 and install
+//then update the .cpp and .h files with the ones from my github fork
+//this has modifications to allow the library to work with the esp8266 (set sda scl pins)
+//https://github.com/agrath/Adafruit-MCP23008-library
+#include <Adafruit_MCP23008.h>
+
+//Required as dependency of Adafruit_MCP23008
 #include <Wire.h>
 
 #define SS_PIN 4  //D2
@@ -49,6 +56,7 @@ If you don't do this you'll get bad request header errors as iisexpress only all
 Once the tunnel is defined, you'll need to "ngrok start accesscontrol"
 Note: i'm using a license for ngrok, if you use the free version you can't customise the subdomain and will get a random one each time
 */
+
 const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.au.ngrok.io/api/";
 const bool debugHttp = false;
 const bool debugValidate = false;
@@ -60,17 +68,19 @@ const bool debugWifi = true;
 // the setup function runs once when you press reset or power the board
 void setup()
 {
-  initializeLockStatus();
+  initializeWifi();
   initializeStatusLed();
   initializeSerial();
   initializeGpio();
-  initializeWifi();
+  initializeLockStatus();
   initializeRfidReader();
   initializeApi();
 }
 void initializeGpio()
 {
+  mcp.begin(D3, D4);
   mcp.pinMode(0, INPUT);
+  mcp.pullUp(0, HIGH);
 }
 
 void initializeSerial()
@@ -97,22 +107,19 @@ void initializeStatusLed()
 void initializeLockStatus()
 {
   Serial.println(F("Initializing lock status..."));
-  pinMode(REED_PIN, INPUT);
-  pinMode(MAGBOND_PIN, INPUT);
-  pinMode(A0, INPUT);
-  pinMode(D8, INPUT);
-  lockReedStatus = (digitalRead(REED_PIN) == HIGH);
-  lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
-  a0State = (digitalRead(A0) == HIGH);
-  mcpD0State = (digitalRead(D8) == HIGH);
+  //pinMode(REED_PIN, INPUT);
+  //pinMode(MAGBOND_PIN, INPUT);
+  //lockReedStatus = (digitalRead(REED_PIN) == HIGH);
+  //lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
+  mcpD0State = (mcp.digitalRead(0) == HIGH);
   timer.setInterval(200, readLockStatus);
 }
 
 int LockReadAttemptNumber = 0;
 void readLockStatus()
 {
-  lockReedStatus = (digitalRead(REED_PIN) == HIGH);
-  lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
+  //lockReedStatus = (digitalRead(REED_PIN) == HIGH);
+  //lockMagBondStatus = (digitalRead(MAGBOND_PIN) == HIGH);
   //a0State = (digitalRead(A0) == HIGH);
   mcpD0State = (mcp.digitalRead(0) == HIGH);
   if (debugLockStatus)
@@ -122,12 +129,10 @@ void readLockStatus()
     Serial.print(strBuffer);
     Serial.print(F(") Lock powered "));
     Serial.print(lockTriggerStatus);
-    Serial.print(F(" Reed detects door "));
-    Serial.print(lockReedStatus);
-    Serial.print(F(" Magnetic bond "));
-    Serial.print(lockMagBondStatus);
-    //Serial.print(F(" AO "));
-    //Serial.print(a0State);
+    //Serial.print(F(" Reed detects door "));
+    //Serial.print(lockReedStatus);
+    //Serial.print(F(" Magnetic bond "));
+    //Serial.print(lockMagBondStatus);
     Serial.print(F(" MCP_D0 "));
     Serial.println(mcpD0State);
   }
