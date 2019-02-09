@@ -120,6 +120,7 @@ namespace Hackland.AccessControl.Web.Controllers
 
             var model = item.ConvertTo<UpdatePersonViewModel>();
             model.Mode = CreateUpdateModeEnum.Update;
+            model.IsAccessTokenAssigned = !string.IsNullOrEmpty(item.TokenValue);
             BindAvailableDoors(model);
 
             //copy selected state into doors
@@ -128,7 +129,10 @@ namespace Hackland.AccessControl.Web.Controllers
                 foreach (var selectedDoor in item.PersonDoors.Where(pd => !pd.IsDeleted).Select(pd => pd.DoorId))
                 {
                     var selected = model.Doors.FirstOrDefault(d => string.Equals(d.Value, selectedDoor.ToString()));
-                    selected.Selected = true;
+                    if (selected != null)
+                    {
+                        selected.Selected = true;
+                    }
                 }
             }
             return View(model);
@@ -235,6 +239,21 @@ namespace Hackland.AccessControl.Web.Controllers
             DataContext.SaveChanges();
 
             AddSuccess("Associated", "Assigned access token to {0}", person.Name);
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        [Route("person/clear-token/{id}")]
+        public IActionResult ClearToken(int id)
+        {
+            var person = DataContext.People.FirstOrDefault(p => p.Id == id);
+
+            person.TokenValue = null;
+
+            DataContext.SaveChanges();
+
+            AddSuccess("Associated", "Cleared access token for {0}", person.Name);
 
             return RedirectToAction("Index");
         }

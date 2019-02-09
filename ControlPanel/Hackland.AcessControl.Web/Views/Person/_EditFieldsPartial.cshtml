@@ -52,9 +52,15 @@
     </div>
     @if (Model.Mode == CreateUpdateModeEnum.Update)
     {
-    <div class="col-sm-1">
-        <a href="/person/delete/@((Model as UpdatePersonViewModel).Id)"class="btn btn-outline-danger" data-toggle="confirmation" data-btn-ok-class="btn-danger" formaction="/person/delete">delete</a>
-    </div>
+        <div class="col-sm-1">
+            <a href="/person/delete/@((Model as UpdatePersonViewModel).Id)" class="btn btn-outline-danger" data-toggle="confirmation" data-btn-ok-class="btn-danger" formaction="/person/delete">delete</a>
+        </div>
+        if (Model.IsAccessTokenAssigned)
+        {
+            <div class="col-sm-2">
+                <a href="/person/clear-token/@((Model as UpdatePersonViewModel).Id)" class="btn btn-outline-danger" data-toggle="confirmation" data-btn-ok-class="btn-danger" formaction="/person/clear-token">clear access token</a>
+            </div>
+        }
     }
     <div class="col-sm-1">
         <a href="/person" class="text-secondary">Cancel</a>

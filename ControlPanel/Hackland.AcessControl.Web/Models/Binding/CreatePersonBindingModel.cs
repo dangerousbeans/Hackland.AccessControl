@@ -27,5 +27,8 @@ namespace Hackland.AccessControl.Web.Models
         public List<SelectListItem> Doors { get; set; }
 
         public CreateUpdateModeEnum Mode { get; set; }
+
+
+        public bool IsAccessTokenAssigned { get; set; }
     }
 }

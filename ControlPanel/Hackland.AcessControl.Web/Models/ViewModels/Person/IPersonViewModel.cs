@@ -15,7 +15,7 @@ namespace Hackland.AccessControl.Web.Models.ViewModels
         [Display(Name = "Phone number")]
         string PhoneNumber { get; set; }
         List<SelectListItem> Doors { get; set; }
-
+        bool IsAccessTokenAssigned { get; set; }
         CreateUpdateModeEnum Mode { get; set; }
     }
 }
