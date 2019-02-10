@@ -25,14 +25,16 @@
 
 #define SS_PIN 4  //D2
 #define RST_PIN 5 //D1
-const int RELAY_PIN = 2;
+const int RELAY_PIN = D8;
 const int REED_PIN = 0;
 const int MAGBOND_PIN = 1;
-bool lockReedStatus = false;    //false = magnet present, true = magnet not found
-bool lockMagBondStatus = false; //false = bonded, true = bond not detected
-bool lockTriggerStatus = true;  //true = power is on for lock (should be locked), false = power is off for lock (should be unlocked)
+const int BUTTON_PIN = 2;
 
-char strBuffer[10]; //small char buffer for sprintf use
+bool lockReedStatus = false;        //false = magnet present, true = magnet not found
+bool lockMagBondStatus = false;     //false = bonded, true = bond not detected
+bool lockTriggerStatus = true;      //true = power is on for lock (should be locked), false = power is off for lock (should be unlocked)
+bool lockRequestExitStatus = false; //false = button not pressed, true = button pressed for exit
+char strBuffer[10];                 //small char buffer for sprintf use
 
 MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
 ESP8266WiFiMulti wifiMulti;       // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
@@ -62,57 +64,52 @@ const bool debugApiValidate = false;
 const bool debugRfid = false;
 const bool debugDoorLockUnlock = true;
 const bool debugLockStatus = true;
-const bool debugWifi = true;
+const bool debugWifi = false;
 
 // the setup function runs once when you press reset or power the board
 void setup()
 {
   initializeStatusLed();
   initializeSerial();
-  // if(verifyGpio()){
-  //   initializeWifi();
-  //   initializeGpio();
-  //   initializeLockStatus();
-  //   initializeRfidReader();
-  //   initializeApi();
-  // }
-
-  mcp.begin(D3, D4);
-  mcp.pinMode(RELAY_PIN, OUTPUT);
+  if (verifyGpio())
+  {
+    initializeWifi();
+    initializeGpio();
+    initializeLockStatus();
+    initializeRfidReader();
+    initializeApi();
+  }
 }
 int state = LOW;
 void loop()
 {
-  //timer.run();
-  state = state == LOW ? HIGH : LOW;
-  mcp.digitalWrite(RELAY_PIN, state);
-  digitalWrite(LED_BUILTIN, state == LOW ? HIGH : LOW);
-  delay(5000);
+  timer.run();
 }
-bool verifyGpio(){
+bool verifyGpio()
+{
   Serial.println("Verifying I2C communication with mcp23008");
   Wire.begin(D3, D4);
   int numberOfDevices = 0;
-  for(byte address = 0; address < 127; address++)
+  for (byte address = 0; address < 127; address++)
   {
     Wire.beginTransmission(address);
     byte error = Wire.endTransmission();
-    if(error == 0)
+    if (error == 0)
     {
       Serial.print("I2C device found at address 0x");
-      if (address<16)
+      if (address < 16)
       {
         Serial.print("0");
       }
-      Serial.println(address,HEX);
+      Serial.println(address, HEX);
       numberOfDevices++;
     }
   }
   if (numberOfDevices == 0)
   {
-      Serial.println("I2C communication with mcp23008 failed. Aborting startup.");
-      digitalWrite(LED_BUILTIN, LOW);
-      return false;
+    Serial.println("I2C communication with mcp23008 failed. Aborting startup.");
+    digitalWrite(LED_BUILTIN, LOW);
+    return false;
   }
   Serial.println("I2C communication with mcp23008 successful");
   return true;
@@ -124,7 +121,8 @@ void initializeGpio()
   mcp.pullUp(REED_PIN, HIGH);
   mcp.pinMode(MAGBOND_PIN, INPUT);
   mcp.pullUp(MAGBOND_PIN, HIGH);
-  mcp.pinMode(RELAY_PIN, OUTPUT);
+  mcp.pinMode(BUTTON_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
 }
 
 void initializeSerial()
@@ -153,6 +151,7 @@ void initializeLockStatus()
   Serial.println(F("Initializing lock status..."));
   lockReedStatus = (mcp.digitalRead(REED_PIN) == LOW);
   lockMagBondStatus = (mcp.digitalRead(MAGBOND_PIN) == LOW);
+  lockRequestExitStatus = (mcp.digitalRead(BUTTON_PIN) == HIGH);
   timer.setInterval(200, readLockStatus);
 }
 
@@ -161,6 +160,7 @@ void readLockStatus()
 {
   lockReedStatus = (mcp.digitalRead(REED_PIN) == LOW);
   lockMagBondStatus = (mcp.digitalRead(MAGBOND_PIN) == LOW);
+  lockRequestExitStatus = (mcp.digitalRead(BUTTON_PIN) == HIGH);
   if (debugLockStatus)
   {
     Serial.print(F("Reading lock status ("));
@@ -168,10 +168,16 @@ void readLockStatus()
     Serial.print(strBuffer);
     Serial.print(F(") Lock powered "));
     Serial.print(lockTriggerStatus);
+    Serial.print(F(" Exit requested "));
+    Serial.print(lockRequestExitStatus);
     Serial.print(F(" Reed detects door "));
     Serial.print(lockReedStatus);
     Serial.print(F(" Magnetic bond "));
     Serial.println(lockMagBondStatus);
+  }
+  if (lockRequestExitStatus && lockTriggerStatus)
+  {
+    unlockDoor(false);
   }
 }
 
@@ -290,7 +296,7 @@ void unlockDoor(bool permanent)
   {
     Serial.println("Unlock Door");
   }
-  mcp.digitalWrite(RELAY_PIN, HIGH);
+  digitalWrite(RELAY_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
   lockTriggerStatus = false;
   if (!permanent)
@@ -306,7 +312,7 @@ void lockDoor()
   {
     Serial.println("Lock Door");
   }
-  mcp.digitalWrite(RELAY_PIN, LOW);
+  digitalWrite(RELAY_PIN, LOW);
   digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
   lockTriggerStatus = true;
 }
@@ -352,7 +358,10 @@ void sendApiRegister()
   //add properties like this
   //https://techtutorialsx.com/2017/01/08/esp8266-posting-json-data-to-a-flask-server-on-the-cloud/
   JsonEncoder["MacAddress"] = MacAddress;
-
+  JsonEncoder["LockTriggerStatus"] = lockTriggerStatus;
+  JsonEncoder["LockReedStatus"] = lockReedStatus;
+  JsonEncoder["LockMagBondStatus"] = lockMagBondStatus;
+  JsonEncoder["LockRequestExitStatus"] = lockRequestExitStatus;
   //debug
   char JsonMessageBuffer[300];
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
