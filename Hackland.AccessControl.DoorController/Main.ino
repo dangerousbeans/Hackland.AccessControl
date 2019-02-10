@@ -25,7 +25,7 @@
 
 #define SS_PIN 4  //D2
 #define RST_PIN 5 //D1
-const int RELAY_PIN = 2; 
+const int RELAY_PIN = 2;
 const int REED_PIN = 0;
 const int MAGBOND_PIN = 1;
 bool lockReedStatus = false;    //false = magnet present, true = magnet not found
@@ -57,22 +57,65 @@ Note: i'm using a license for ngrok, if you use the free version you can't custo
 
 const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.au.ngrok.io/api/";
 const bool debugHttp = false;
-const bool debugValidate = false;
 const bool debugApiRegister = false;
+const bool debugApiValidate = false;
 const bool debugRfid = false;
+const bool debugDoorLockUnlock = true;
 const bool debugLockStatus = true;
 const bool debugWifi = true;
 
 // the setup function runs once when you press reset or power the board
 void setup()
 {
-  initializeWifi();
   initializeStatusLed();
   initializeSerial();
-  initializeGpio();
-  initializeLockStatus();
-  initializeRfidReader();
-  initializeApi();
+  // if(verifyGpio()){
+  //   initializeWifi();
+  //   initializeGpio();
+  //   initializeLockStatus();
+  //   initializeRfidReader();
+  //   initializeApi();
+  // }
+
+  mcp.begin(D3, D4);
+  mcp.pinMode(RELAY_PIN, OUTPUT);
+}
+int state = LOW;
+void loop()
+{
+  //timer.run();
+  state = state == LOW ? HIGH : LOW;
+  mcp.digitalWrite(RELAY_PIN, state);
+  digitalWrite(LED_BUILTIN, state == LOW ? HIGH : LOW);
+  delay(5000);
+}
+bool verifyGpio(){
+  Serial.println("Verifying I2C communication with mcp23008");
+  Wire.begin(D3, D4);
+  int numberOfDevices = 0;
+  for(byte address = 0; address < 127; address++)
+  {
+    Wire.beginTransmission(address);
+    byte error = Wire.endTransmission();
+    if(error == 0)
+    {
+      Serial.print("I2C device found at address 0x");
+      if (address<16)
+      {
+        Serial.print("0");
+      }
+      Serial.println(address,HEX);
+      numberOfDevices++;
+    }
+  }
+  if (numberOfDevices == 0)
+  {
+      Serial.println("I2C communication with mcp23008 failed. Aborting startup.");
+      digitalWrite(LED_BUILTIN, LOW);
+      return false;
+  }
+  Serial.println("I2C communication with mcp23008 successful");
+  return true;
 }
 void initializeGpio()
 {
@@ -142,7 +185,7 @@ void initializeWifi()
   wifiMulti.addAP((const char *)F("MyRepublic C34D"), (const char *)F("mkv2q923t3"));
   wifiMulti.addAP((const char *)F("Hackland"), (const char *)F("hackland1"));
   wifiMulti.addAP((const char *)F("Hackland++ 2G"), (const char *)F("hackland1"));
-  
+
   while (wifiMulti.run() != WL_CONNECTED)
   {
     // Wait for the Wi-Fi to connect
@@ -174,10 +217,6 @@ void initializeRfidReader()
   }
   timer.setInterval(500, readRfidToSerial);
 }
-void loop()
-{
-  timer.run();
-}
 
 int RFIDReadAttemptNumber = 0;
 void readRfidToSerial()
@@ -186,6 +225,7 @@ void readRfidToSerial()
   {
     Serial.print(F("Read RFID ("));
     sprintf(strBuffer, "%06d", RFIDReadAttemptNumber++);
+    Serial.print(strBuffer);
     Serial.println(F(")"));
   }
 
@@ -218,22 +258,27 @@ void readRfidToSerial()
   // Dump debug info about the card; PICC_HaltA() is automatically called
   //mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
 
-  String content = "";
+  String rfidUIDValue = "";
   for (byte i = 0; i < mfrc522.uid.size; i++)
   {
-    content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
-    content.concat(String(mfrc522.uid.uidByte[i], HEX));
+    rfidUIDValue.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+    rfidUIDValue.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
-  content.toUpperCase();
+  rfidUIDValue.toUpperCase();
 
   if (debugRfid)
   {
     Serial.print("UID tag:");
-    Serial.println(content);
+    Serial.println(rfidUIDValue);
   }
 
-  bool unlock = sendApiValidate(content);
-  if (unlock)
+  bool shouldUnlock = sendApiValidate(rfidUIDValue);
+  if (debugDoorLockUnlock)
+  {
+    Serial.print("Unlock result:");
+    Serial.println(shouldUnlock);
+  }
+  if (shouldUnlock)
   {
     unlockDoor(false);
   }
@@ -241,6 +286,10 @@ void readRfidToSerial()
 
 void unlockDoor(bool permanent)
 {
+  if (debugDoorLockUnlock)
+  {
+    Serial.println("Unlock Door");
+  }
   mcp.digitalWrite(RELAY_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
   lockTriggerStatus = false;
@@ -253,6 +302,10 @@ void unlockDoor(bool permanent)
 
 void lockDoor()
 {
+  if (debugDoorLockUnlock)
+  {
+    Serial.println("Lock Door");
+  }
   mcp.digitalWrite(RELAY_PIN, LOW);
   digitalWrite(LED_BUILTIN, HIGH); // turn the LED off by making the voltage LOW
   lockTriggerStatus = true;
@@ -331,7 +384,7 @@ void sendApiRegister()
 
 bool sendApiValidate(String tokenValue)
 {
-  if (debugValidate)
+  if (debugApiValidate)
   {
     Serial.println(F("API Validate"));
     Serial.print("Token value ");
@@ -358,7 +411,7 @@ bool sendApiValidate(String tokenValue)
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
 
-  if (debugHttp && debugValidate)
+  if (debugHttp && debugApiValidate)
   {
     Serial.print("Request ");
     Serial.println(url);
@@ -369,7 +422,7 @@ bool sendApiValidate(String tokenValue)
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
   const char *json = const_cast<char *>(http.getString().c_str());
 
-  if (debugHttp && debugValidate)
+  if (debugHttp && debugApiValidate)
   {
     Serial.print("Response ");
     Serial.println(httpCode); //Print HTTP return code
@@ -385,9 +438,8 @@ bool sendApiValidate(String tokenValue)
   const char *message = root["message"];          // "Success"
   int doorReadId = root["doorReadId"];            // 4
 
-  if (debugValidate)
+  if (debugApiValidate)
   {
-
     Serial.print("Response ");
     Serial.print(doorReadId);
     Serial.print(" is allowed ");
@@ -403,7 +455,7 @@ bool sendApiValidate(String tokenValue)
     const char *matchedPerson_emailAddress = matchedPerson["emailAddress"]; // "agrath@gmail.com"
     const char *matchedPerson_name = matchedPerson["name"];                 // "Gareth Evans"
 
-    if (debugValidate)
+    if (debugApiValidate)
     {
       Serial.print("Person ");
       Serial.print(matchedPerson_name);
