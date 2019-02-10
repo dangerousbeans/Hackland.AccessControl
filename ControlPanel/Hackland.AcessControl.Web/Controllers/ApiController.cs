@@ -1,4 +1,5 @@
 ﻿using Hackland.AccessControl.Data;
+using Hackland.AccessControl.Data.Enums;
 using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models.Api;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,8 @@ namespace Hackland.AccessControl.Web.Controllers
             if (model == null) return Json(false);
             if (string.IsNullOrEmpty(model.MacAddress)) return Json(false);
 
+            DoorStatus status = MapLockBooleansToDoorStatus(model);
+
             var door = DataContext.Doors.FirstOrDefault(d => d.MacAddress == model.MacAddress);
             if (door == null)
             {
@@ -35,15 +38,47 @@ namespace Hackland.AccessControl.Web.Controllers
                 {
                     MacAddress = model.MacAddress,
                     Name = "Unknown",
-                    Status = Data.Enums.DoorStatus.Unknown,
+                    Status = status,
                     CreatedTimestamp = DateTime.Now
                 };
                 DataContext.Add(door);
             }
             door.LastHeartbeatTimestamp = DateTime.Now;
             door.IsDeleted = false;
+            door.Status = status;
             DataContext.SaveChanges();
             return Json(true);
+        }
+
+        private static DoorStatus MapLockBooleansToDoorStatus(RegisterDoorModel model)
+        {
+            DoorStatus status = DoorStatus.Unknown;
+            if (!model.LockMagBondStatus && !model.LockReedStatus)
+            {
+                status = DoorStatus.Open;
+            }
+            if (!model.LockMagBondStatus && !model.LockReedStatus && (model.LockTriggerStatus || model.LockRequestExitStatus))
+            {
+                status = DoorStatus.Locking;
+            }
+            if (!model.LockMagBondStatus && model.LockReedStatus)
+            {
+                status = DoorStatus.Closed;
+            }
+            if (model.LockMagBondStatus && model.LockReedStatus)
+            {
+                status = DoorStatus.Locked;
+            }
+            if (model.LockMagBondStatus && !model.LockReedStatus)
+            {
+                status = DoorStatus.Fault;
+            }
+            if (model.LockRequestExitStatus)
+            {
+                status = DoorStatus.UnlockRequested;
+            }
+
+            return status;
         }
 
         [HttpPost("door/validate")]
@@ -88,9 +123,9 @@ namespace Hackland.AccessControl.Web.Controllers
                     TokenValue = model.TokenValue
                 };
                 var lastRead = DataContext.DoorReads.OrderByDescending(dr => dr.Timestamp).FirstOrDefault();
-                
+
                 //if the last read is for the same token and it was under a minute ago, don't log again
-                if (lastRead == null || lastRead.TokenValue != model.TokenValue || (DateTime.Now - lastRead.Timestamp) > TimeSpan.FromMinutes(1) )
+                if (lastRead == null || lastRead.TokenValue != model.TokenValue || (DateTime.Now - lastRead.Timestamp) > TimeSpan.FromMinutes(1))
                 {
                     DataContext.DoorReads.Add(read);
                 }
