@@ -33,14 +33,25 @@
         {
             for (int i = 0; i < @Model.Doors.Count(); i++)
             {
-                <div class="form-check field-group">
-                    <label asp-for="@Model.Doors[i].Selected" class="form-check-label">
-                        <input asp-for="@Model.Doors[i].Selected" type="checkbox" class="form-check-input"/>
-                        @Model.Doors[i].Text
-                        <input asp-for="Doors[i].Value" type="hidden" />
-                        <input asp-for="Doors[i].Text" type="hidden" />
-                    </label>
-                </div>
+        <div class="form-check field-group">
+            <label asp-for="@Model.Doors[i].Selected" class="form-check-label">
+                <input asp-for="@Model.Doors[i].Selected" type="checkbox" class="form-check-input" />
+                @Model.Doors[i].Text
+
+                <input asp-for="Doors[i].Value" type="hidden" />
+                <input asp-for="Doors[i].Text" type="hidden" />
+            </label>
+
+
+            @if (Model.Doors[i].Disabled)
+            {
+                <span class="badge badge-danger">Offline</span>
+            }
+            else
+            {
+                <span class="badge badge-success">Offline</span>
+            }
+        </div>
             }
         }
     </div>

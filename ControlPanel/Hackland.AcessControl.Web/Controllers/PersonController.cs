@@ -53,7 +53,11 @@ namespace Hackland.AccessControl.Web.Controllers
 
         private void BindAvailableDoors(IPersonViewModel model)
         {
-            model.Doors = (from d in DataContext.Doors where !d.IsDeleted select new SelectListItem(d.Name == "Unknown" ? d.MacAddress : d.Name, d.Id.ToString(), model.Mode == CreateUpdateModeEnum.Create ? true : false, false)).ToList();
+            model.Doors = (from d in DataContext.Doors
+                           orderby d.CreatedTimestamp descending
+                           group d by d.MacAddress into g
+                           let d = g.FirstOrDefault()
+                           select new SelectListItem(d.Name == "Unknown" ? d.MacAddress : d.Name, d.Id.ToString(), model.Mode == CreateUpdateModeEnum.Create ? true : false, d.IsDeleted)).ToList();
         }
 
         [HttpPost]
