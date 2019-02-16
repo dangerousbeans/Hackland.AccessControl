@@ -188,9 +188,9 @@ void initializeWifi()
     Serial.println(F("Initializing Wifi..."));
   }
 
-  wifiMulti.addAP((const char *)F("MyRepublic C34D"), (const char *)F("mkv2q923t3"));
-  wifiMulti.addAP((const char *)F("Hackland"), (const char *)F("hackland1"));
-  wifiMulti.addAP((const char *)F("Hackland++ 2G"), (const char *)F("hackland1"));
+  wifiMulti.addAP("MyRepublic C34D", "mkv2q923t3");
+  wifiMulti.addAP("Hackland", "hackland1");
+  wifiMulti.addAP("Hackland++ 2G", "hackland1");
 
   while (wifiMulti.run() != WL_CONNECTED)
   {
