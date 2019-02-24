@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <UserSecretsId>aspnet-BHV.Web-B6CC2890-A644-4348-B363-1D5CA47AE47C</UserSecretsId>
+    <DockerTargetOS>Linux</DockerTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.0.1916590" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" PrivateAssets="All" />
   </ItemGroup>
 
@@ -27,13 +29,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Hackland.AcessControl.Data\Hackland.AccessControl.Data.csproj" />
   </ItemGroup>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="COPY NUL &quot;$(ProjectDir)app_offline.htm&quot;" />
-  </Target>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="DEL &quot;$(ProjectDir)app_offline.htm&quot;" />
-  </Target>
 
 </Project>
