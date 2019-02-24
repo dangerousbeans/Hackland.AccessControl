@@ -24,6 +24,14 @@ namespace Hackland.AccessControl.Web
 
         public IConfiguration Configuration { get; }
 
+        private bool IsRunningInDocker
+        {
+            get
+            {
+                return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+            }
+        }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -31,7 +39,14 @@ namespace Hackland.AccessControl.Web
 
             services.AddDbContext<DataContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                if (IsRunningInDocker)
+                {
+                    options.UseMySQL(Configuration.GetConnectionString("ProductionMySQLConnection"));
+                }
+                else
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("DevelopmentSQLServerConnection"));
+                }
             });
 
             services.AddDataProtection()
