@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="microsoft.aspnetcore.identity.entityframeworkcore" Version="2.2.0" />
-    <PackageReference Include="microsoft.entityframeworkcore.sqlserver" Version="2.2.0" />
+    <PackageReference Include="microsoft.entityframeworkcore.sqlserver" Version="2.2.2" />
     <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.15" />
   </ItemGroup>
 
