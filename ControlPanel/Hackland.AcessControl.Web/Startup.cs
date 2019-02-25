@@ -39,13 +39,17 @@ namespace Hackland.AccessControl.Web
 
             services.AddDbContext<DataContext>(options =>
             {
+
+                string connectionString;
                 if (IsRunningInDocker)
                 {
-                    options.UseMySQL(Configuration.GetConnectionString("ProductionMySQLConnection"));
+                    connectionString = Configuration.GetConnectionString("ProductionMySQLConnection");
+                    options.UseMySQL(connectionString);
                 }
                 else
                 {
-                    options.UseSqlServer(Configuration.GetConnectionString("DevelopmentSQLServerConnection"));
+                    connectionString = Configuration.GetConnectionString("DevelopmentSQLServerConnection");
+                    options.UseSqlServer(connectionString);
                 }
             });
 
