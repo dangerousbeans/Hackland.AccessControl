@@ -1,0 +1,41 @@
+version: '3.3'
+
+services:
+   database:
+     image: mysql:5.7
+     volumes:
+       - db_data:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: 2YPy9rbUnw4WxkML
+       MYSQL_DATABASE: accesscontrol
+       MYSQL_USER: accesscontrol
+       MYSQL_PASSWORD: jpbmy65KGYM8bR9y
+
+   webapp:
+     depends_on:
+       - database
+     image: webapp-accesscontrol:latest
+     ports:
+       - "5555:5555"
+     restart: always
+     environment:
+       DB_HOST: database:3306
+       DB_USER: accesscontrol
+       DB_PASSWORD: jpbmy65KGYM8bR9y
+       DB_NAME: accesscontrol
+
+   proxy:
+     build:
+       context:  ./nginx
+       dockerfile: Dockerfile
+     ports:
+       - "80:80"
+       - "443:443"
+     volumes:
+       - /etc/letsencrypt/:/etc/letsencrypt/
+     links:
+       - webapp
+
+volumes:
+    db_data: {}
