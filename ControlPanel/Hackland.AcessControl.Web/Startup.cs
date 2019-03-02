@@ -35,7 +35,7 @@ namespace Hackland.AccessControl.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpsRedirection(options => options.HttpsPort = 443);
+            //services.AddHttpsRedirection(options => options.HttpsPort = 443);
 
             services.AddDbContext<DataContext>(options =>
             {
@@ -79,10 +79,10 @@ namespace Hackland.AccessControl.Web
                 app.UseHsts();
             }
 
-            if (env.IsProduction())
-            {
-                app.UseHttpsRedirection();
-            }
+            //if (env.IsProduction())
+            //{
+            //    app.UseHttpsRedirection();
+            //}
 
             InitializeDatabase(app);
             app.UseStaticFiles();
