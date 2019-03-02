@@ -16,7 +16,7 @@ namespace Hackland.AccessControl.Data.Migrations
                name: "CreatedTimestamp",
                table: "Door",
                nullable: false,
-               defaultValueSql: "getdate()");
+               defaultValueSql: "current_timestamp"); //agnostic getdate()
             migrationBuilder.AddColumn<Guid>(
                name: "CreatedByUserId",
                table: "Door",
