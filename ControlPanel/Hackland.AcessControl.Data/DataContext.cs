@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 
 namespace Hackland.AccessControl.Data
@@ -15,6 +16,14 @@ namespace Hackland.AccessControl.Data
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
+        }
+
+        private bool IsRunningInDocker
+        {
+            get
+            {
+                return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -46,7 +55,6 @@ namespace Hackland.AccessControl.Data
                 .WithMany(p => p.PersonDoors)
                 .HasForeignKey(pd => pd.DoorId);
 
-
             builder.Entity<DoorRead>()
                 .HasKey(t => t.Id);
 
@@ -59,6 +67,21 @@ namespace Hackland.AccessControl.Data
                 .HasOne(pd => pd.Door)
                 .WithMany(p => p.DoorReads)
                 .HasForeignKey(pd => pd.DoorId);
+
+            if (IsRunningInDocker)
+            {
+                foreach (var entityType in builder.Model.GetEntityTypes())
+                {
+                    foreach (var property in entityType.GetProperties())
+                    {
+                        if (property.ClrType == typeof(bool))
+                        {
+                            property.SetValueConverter(new BoolToZeroOneConverter<Int16>());
+                        }
+                    }
+                }
+            }
+
         }
 
     }
