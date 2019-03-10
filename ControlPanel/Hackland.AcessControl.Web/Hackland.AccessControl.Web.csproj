@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <None Include="compilerconfig.json" />
+    <None Include="wwwroot\js\password.js" />
   </ItemGroup>
 
   <ItemGroup>
