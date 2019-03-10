@@ -1,0 +1,29 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model UpdateUserBindingModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Update User";
+}
+
+<h3>
+    Update user
+
+    @if(!string.IsNullOrEmpty(Model.FirstName) && !string.IsNullOrEmpty(Model.LastName))
+    {
+        @Model.FirstName<text> </text>@Model.LastName
+    }
+    else
+    {
+        @Model.EmailAddress
+    }
+    
+</h3>
+
+<partial name="_Message" />
+
+<form action="Update" class="mt-5" method="post" novalidate>
+    <input asp-for="Mode" type="hidden" />
+    <input asp-for="Id" type="hidden" />
+    <partial name="_EditFieldsPartial" />
+    <partial name="_ButtonsPartial" />
+</form>

@@ -136,6 +136,58 @@ namespace Hackland.AccessControl.Web.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Update(Guid id)
+        {
+            var item = DataContext.Users
+            .Where(p => p.Id == id)
+            .Select(p => p)
+            .FirstOrDefault();
+
+            var model = item.ConvertTo<UpdateUserBindingModel>();
+            model.Id = item.Id;
+            model.Phone = item.PhoneNumber;
+            model.EmailAddress = item.Email;
+            model.Mode = CreateUpdateModeEnum.Update;
+            
+            return View(model);
+
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Update(UpdateUserViewModel model)
+        {
+            var item = DataContext.Users
+            .Where(p => p.Id == model.Id)
+            .Select(p => p)
+            .FirstOrDefault();
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            item.Email = model.EmailAddress;
+            item.UserName = model.EmailAddress;
+            item.FirstName = model.FirstName;
+            item.LastName = model.LastName;
+            item.PhoneNumber = model.Phone;
+
+            var result = await UserManager.UpdateAsync(item);
+
+            if (result.Errors.Any())
+            {
+                AddError("Error", string.Join("\r\n", result.Errors.Select(e => e.Description)));
+                return View(model);
+            }
+
+            DataContext.SaveChanges();
+            AddSuccess("Success", $"Updated user {model.EmailAddress} successfully");
+            return RedirectToAction("Index");
+
+        }
+
         [HttpPost]
         [Route("user/reset-password")]
         public async Task<IActionResult> ResetPassword(ResetUserPasswordViewModel model)
