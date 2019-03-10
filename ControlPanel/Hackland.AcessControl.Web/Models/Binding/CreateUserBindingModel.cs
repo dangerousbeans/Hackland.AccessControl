@@ -51,7 +51,7 @@ namespace Hackland.AccessControl.Web.Models
                 task.Wait();
                 if(!task.Result.Succeeded)
                 {
-                    yield return new ValidationResult(string.Join("<br/>", task.Result.Errors.Select(e => e.Description)));
+                    yield return new ValidationResult(string.Join("\r\n", task.Result.Errors.Select(e => e.Description)));
                 }
             }
         }

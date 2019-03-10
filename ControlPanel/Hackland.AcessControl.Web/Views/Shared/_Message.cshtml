@@ -15,7 +15,11 @@
                                 <i class="fas fa-times-circle"></i>
                             </div>
                             <strong>@message.Title</strong>
-                            @message.Text
+                            @if (message.Text.Contains(System.Environment.NewLine))
+                            {
+                                <br />
+                            }
+                            @Html.Raw(message.Text.Replace("\r\n", "<br/>"));
                         </div>
                         break;
                     case MessageType.Info:
@@ -25,7 +29,11 @@
                                 <i class="fas fa-info-circle"></i>
                             </div>
                             <strong>@message.Title</strong>
-                            @message.Text
+                            @if (message.Text.Contains(System.Environment.NewLine))
+                            {
+                                <br />
+                            }
+                            @Html.Raw(message.Text.Replace("\r\n", "<br/>"));
                         </div>
                         break;
                     case MessageType.Warning:
@@ -35,7 +43,11 @@
                                 <i class="fas fa-warning"></i>
                             </div>
                             <strong>@message.Title</strong>
-                            @message.Text
+                            @if (message.Text.Contains(System.Environment.NewLine))
+                            {
+                                <br />
+                            }
+                            @Html.Raw(message.Text.Replace("\r\n", "<br/>"));
                         </div>
                         break;
                     case MessageType.Success:
@@ -45,7 +57,11 @@
                                 <i class="fas fa-check"></i>
                             </div>
                             <strong>@message.Title</strong>
-                            @message.Text
+                            @if (message.Text.Contains(System.Environment.NewLine))
+                            {
+                                <br />
+                            }
+                            @Html.Raw(message.Text.Replace("\r\n", "<br/>"));
                         </div>
                         break;
                 }
