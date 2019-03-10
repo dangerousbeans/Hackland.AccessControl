@@ -56,6 +56,7 @@ namespace Hackland.AccessControl.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AddError("Error", ModelState, state =>  state.Children != null && state.Children.Any() /*checks for IValidatableObject (because those have children)*/ );
                 return View(binding.ConvertTo<CreateUserViewModel>());
             }
             var item = binding.ConvertTo<User>();
@@ -67,12 +68,13 @@ namespace Hackland.AccessControl.Web.Controllers
                 LastName = binding.LastName,
                 PhoneNumber = binding.Phone
             };
+
             var result = await UserManager.CreateAsync(user, binding.Password);
 
             if (result.Errors.Any())
             {
                 AddError("Error", string.Join("\r\n", result.Errors.Select(e => e.Description)));
-                return View("Create");
+                return View(binding.ConvertTo<CreateUserViewModel>());
             }
 
             DataContext.SaveChanges();

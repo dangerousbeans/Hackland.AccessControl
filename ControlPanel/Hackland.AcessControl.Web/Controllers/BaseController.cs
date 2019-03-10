@@ -47,10 +47,10 @@ namespace Hackland.AccessControl.Web.Controllers
         public void AddInfo(string title, string format, params object[] arguments) => this.AddMessage(MessageModel.CreateInfoMessage(title, format, arguments));
         public void AddWarning(string title, string format, params object[] arguments) => this.AddMessage(MessageModel.CreateWarningMessage(title, format, arguments));
         public void AddWarning(string title, string text, bool clear = true) => this.AddMessage(MessageModel.CreateWarningMessage(title, text));
-        public void AddError(string title, ModelStateDictionary state)
+        public void AddError(string title, ModelStateDictionary state, Func<ModelStateEntry, bool> predicate = null)
         {
             var controller = this;
-            foreach (var error in state.Values.SelectMany(v => v.Errors.Select(b => b.ErrorMessage)))
+            foreach (var error in state.Values.Where(v => predicate == null || predicate(v)).SelectMany(v => v.Errors.Select(b => b.ErrorMessage)))
             {
                 controller.AddError(title, error);
             }

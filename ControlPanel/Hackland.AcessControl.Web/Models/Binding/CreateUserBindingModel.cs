@@ -1,5 +1,6 @@
 ﻿using Hackland.AccessControl.Data;
 using Hackland.AccessControl.Web.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Hackland.AccessControl.Web.Models
 {
-    public class CreateUserBindingModel : IUserViewModel
+    public class CreateUserBindingModel : IUserViewModel, IPasswordViewModel, IValidatableObject
     {
         [Required]
         [EmailAddress]
@@ -39,5 +40,20 @@ namespace Hackland.AccessControl.Web.Models
         public string Phone { get; set; }
 
         public CreateUpdateModeEnum Mode { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var userManager = (UserManager<User>)validationContext.GetService(typeof(UserManager<User>));
+
+            foreach(var validator in userManager.PasswordValidators)
+            {
+                var task = validator.ValidateAsync(userManager, null, this.Password);
+                task.Wait();
+                if(!task.Result.Succeeded)
+                {
+                    yield return new ValidationResult(string.Join("<br/>", task.Result.Errors.Select(e => e.Description)));
+                }
+            }
+        }
     }
 }

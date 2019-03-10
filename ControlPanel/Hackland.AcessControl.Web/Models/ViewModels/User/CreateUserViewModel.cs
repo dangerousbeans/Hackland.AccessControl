@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Hackland.AccessControl.Web.Models.ViewModels
 {
-    public class CreateUserViewModel : CreateUserBindingModel, IUserViewModel
+    public class CreateUserViewModel : CreateUserBindingModel, IUserViewModel, IPasswordViewModel
     {
 
     }

@@ -13,14 +13,6 @@ namespace Hackland.AccessControl.Web.Models.ViewModels
         [Required]
         string EmailAddress { get; set; }
 
-        [Display(Name = "Password")]
-        [Required]
-        string Password { get; set; }
-
-        [Display(Name = "Confirm password")]
-        [Required]
-        string ConfirmPassword { get; set; }
-
         [Display(Name = "First name")]
         [Required]
         string FirstName { get; set; }
