@@ -56,7 +56,7 @@ namespace Hackland.AccessControl.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                AddError("Error", ModelState, state =>  state.Children != null && state.Children.Any() /*checks for IValidatableObject (because those have children)*/ );
+                AddError("Error", ModelState, state => state.Children != null && state.Children.Any() /*checks for IValidatableObject (because those have children)*/ );
                 return View(binding.ConvertTo<CreateUserViewModel>());
             }
             var item = binding.ConvertTo<User>();
@@ -118,5 +118,54 @@ namespace Hackland.AccessControl.Web.Controllers
 
         }
 
+        [HttpGet]
+        [Route("user/reset-password/{id}")]
+        public async Task<IActionResult> ResetPassword(Guid id)
+        {
+            var item = DataContext.Users
+            .Where(p => p.Id == id)
+            .Select(p => p)
+            .FirstOrDefault();
+
+            var model = new ResetUserPasswordViewModel()
+            {
+                EmailAddress = item.Email,
+                Id = item.Id
+            };
+            return View(model);
+
+        }
+
+        [HttpPost]
+        [Route("user/reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetUserPasswordViewModel model)
+        {
+            var item = DataContext.Users
+            .Where(p => p.Id == model.Id)
+            .Select(p => p)
+            .FirstOrDefault();
+
+            model.EmailAddress = item.Email;
+
+            if (!ModelState.IsValid)
+            {
+                AddError("Error", ModelState, state => state.Children != null && state.Children.Any() /*checks for IValidatableObject (because those have children)*/ );
+                return View(model);
+            }
+          
+            var token = await UserManager.GeneratePasswordResetTokenAsync(item);
+            var result = await UserManager.ResetPasswordAsync(item, token, model.Password);
+
+            if (result.Errors.Any())
+            {
+                AddError("Error", string.Join("\r\n", result.Errors.Select(e => e.Description)));
+                return View(model);
+            }
+
+            DataContext.SaveChanges();
+            AddSuccess("Success", $"Reset user {model.EmailAddress} password successfully");
+            return RedirectToAction("Index");
+
+        }
     }
 }
