@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Hackland.AcceessControl.Shared\Hackland.AccessControl.Shared.csproj" />
     <ProjectReference Include="..\Hackland.AcessControl.Data\Hackland.AccessControl.Data.csproj" />
   </ItemGroup>
 
