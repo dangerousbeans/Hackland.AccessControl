@@ -1,4 +1,5 @@
 ﻿using Hackland.AccessControl.Data;
+using Hackland.AccessControl.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +14,7 @@ using System.IO;
 
 namespace Hackland.AccessControl.Web
 {
-    public class Startup
+    public partial class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -21,35 +22,37 @@ namespace Hackland.AccessControl.Web
 
             Configuration = configuration;
         }
-
         public IConfiguration Configuration { get; }
-
-        private bool IsRunningInDocker
-        {
-            get
-            {
-                return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
-            }
-        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+
             //services.AddHttpsRedirection(options => options.HttpsPort = 443);
+            services.Configure<ApplicationConfigurationModel>(Configuration.GetSection("Application"));
 
             services.AddDbContext<DataContext>(options =>
             {
 
                 string connectionString;
-                if (IsRunningInDocker)
+                if (Settings.IsRunningInDocker)
                 {
                     connectionString = Configuration.GetConnectionString("ProductionMySQLConnection");
-                    options.UseMySQL(connectionString);
+                    options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql));
                 }
                 else
                 {
-                    connectionString = Configuration.GetConnectionString("DevelopmentSQLServerConnection");
-                    options.UseSqlServer(connectionString);
+                    if (Settings.UseSqlServer)
+                    {
+                        connectionString = Configuration.GetConnectionString("DevelopmentSQLServerConnection");
+                        options.UseSqlServer(connectionString);
+                    }
+                    else
+                    {
+                        connectionString = Configuration.GetConnectionString("DevelopmentMySQLConnection");
+                        options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql));
+                    }
                 }
             });
 

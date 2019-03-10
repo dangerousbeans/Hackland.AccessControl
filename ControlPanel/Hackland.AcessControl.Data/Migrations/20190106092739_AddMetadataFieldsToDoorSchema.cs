@@ -1,4 +1,5 @@
 ﻿using System;
+using Hackland.AccessControl.Shared;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -15,8 +16,8 @@ namespace Hackland.AccessControl.Data.Migrations
             migrationBuilder.AddColumn<DateTime>(
                name: "CreatedTimestamp",
                table: "Door",
-               nullable: false,
-               defaultValueSql: "current_timestamp"); //agnostic getdate()
+               nullable: false);
+               
             migrationBuilder.AddColumn<Guid>(
                name: "CreatedByUserId",
                table: "Door",

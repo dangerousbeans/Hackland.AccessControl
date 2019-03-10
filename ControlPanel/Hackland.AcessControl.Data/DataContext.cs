@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Hackland.AccessControl.Shared;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -16,6 +17,7 @@ namespace Hackland.AccessControl.Data
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
+
         }
 
         private bool IsRunningInDocker
@@ -68,7 +70,7 @@ namespace Hackland.AccessControl.Data
                 .WithMany(p => p.DoorReads)
                 .HasForeignKey(pd => pd.DoorId);
 
-            if (IsRunningInDocker)
+            if (Settings.IsRunningInDocker || !Settings.UseSqlServer)
             {
                 foreach (var entityType in builder.Model.GetEntityTypes())
                 {

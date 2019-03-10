@@ -1,4 +1,5 @@
 ﻿using System;
+using Hackland.AccessControl.Shared;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -8,13 +9,19 @@ namespace Hackland.AccessControl.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            if (Settings.IsRunningInDocker || !Settings.UseSqlServer)
+            {
+                migrationBuilder.Sql(@"SET default_storage_engine=InnoDB;");
+                migrationBuilder.Sql($@"ALTER DATABASE CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            }
+
             migrationBuilder.CreateTable(
                 name: "Role",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(maxLength: 256, nullable: true),
+                    Name = table.Column<string>(maxLength: 128, nullable: true),
+                    NormalizedName = table.Column<string>(maxLength: 128, nullable: true),
                     ConcurrencyStamp = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -27,10 +34,10 @@ namespace Hackland.AccessControl.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    UserName = table.Column<string>(maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(maxLength: 256, nullable: true),
-                    Email = table.Column<string>(maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(maxLength: 256, nullable: true),
+                    UserName = table.Column<string>(maxLength: 128, nullable: true),
+                    NormalizedUserName = table.Column<string>(maxLength: 128, nullable: true),
+                    Email = table.Column<string>(maxLength: 128, nullable: true),
+                    NormalizedEmail = table.Column<string>(maxLength: 128, nullable: true),
                     EmailConfirmed = table.Column<bool>(nullable: false),
                     PasswordHash = table.Column<string>(nullable: true),
                     SecurityStamp = table.Column<string>(nullable: true),
@@ -146,7 +153,7 @@ namespace Hackland.AccessControl.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserToken", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.PrimaryKey("PK_UserToken", x => new { x.UserId });
                     table.ForeignKey(
                         name: "FK_UserToken_User_UserId",
                         column: x => x.UserId,
