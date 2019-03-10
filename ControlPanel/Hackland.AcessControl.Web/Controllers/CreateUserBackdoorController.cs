@@ -3,30 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hackland.AccessControl.Data;
+using Hackland.AccessControl.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Hackland.AccessControl.Web.Controllers
 {
     [AllowAnonymous]
     public class CreateUserBackdoorController : Controller
     {
-        private UserManager<User> _userManager;
+        private UserManager<User> UserManager;
+        private readonly IOptions<ApplicationConfigurationModel> Config;
 
-        public CreateUserBackdoorController(UserManager<User> userManager)
+        public CreateUserBackdoorController(UserManager<User> userManager, IOptions<ApplicationConfigurationModel> config)
         {
-            _userManager = userManager;
+            this.UserManager = userManager;
+            this.Config = config;
         }
         public async Task<IActionResult> Index()
         {
             //disabled for security
-            if (false)
+            if (Config.Value.EnableCreateDefaultUserRoute)
             {
-                string username = "user@fqdn.com";
-                string password = "PASSWORDHERE";
+                string username = Config.Value.CreateDefaultUserUsername;
+                string password = Config.Value.CreateDefaultUserPassword;
                 var user = new User { UserName = username };
-                var result = await _userManager.CreateAsync(user, password);
+                var result = await UserManager.CreateAsync(user, password);
 
                 if (result.Errors.Any())
                 {
