@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@model UserListViewModel
+@inject IHostingEnvironment env
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Users</h5>
+        <p class="card-text">Users are the administrators who have access to this system and can manage access control. </p>
+
+        <a href="/user/create" class="btn btn-primary">Create new user</a>
+    </div>
+</div>
+
+<partial name="_Message" />
+<br /><br />
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th scope="col" style="width:40px;"></th>
+            <th scope="col">Email</th>
+            <th scope="col">Name</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Items.Any())
+        {
+            <tr>
+                <td colspan="6">There are no users created.</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var user in Model.Items)
+            {
+            <tr>
+                <td scope="row">
+                    <gravatar email="@user.UserName" size="32"></gravatar>
+                </td>
+                <td>@user.UserName</td>
+                <td>@user.FirstName @user.LastName</td>
+                <td>@user.PhoneNumber</td>
+                <td>
+                    <a href="/user/delete/@user.Id" class="btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            }
+        }
+    </tbody>
+</table>
