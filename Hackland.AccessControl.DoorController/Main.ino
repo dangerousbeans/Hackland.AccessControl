@@ -358,11 +358,17 @@ void initializeApi()
   timer.setInterval(ApiRegisterFrequencyMs, sendApiRegister);
 }
 
-void sendApiRegister()
+bool sendApiRegister()
 {
   if (debugApiRegister)
   {
     Serial.println(F("API Register"));
+  }
+
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println(F("Wifi not connected"));
+    return false;
   }
 
   char url[64];
@@ -383,8 +389,13 @@ void sendApiRegister()
   char JsonMessageBuffer[300];
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
 
+  WiFiClient client;
   HTTPClient http;
-  http.begin(url);
+  if (!http.begin(client, url))
+  {
+    Serial.println(F("Failed to connect to http server"));
+    return false;
+  }
   http.addHeader("Content-Type", "application/json");
 
   if (debugHttp && debugApiRegister)
@@ -396,7 +407,12 @@ void sendApiRegister()
   }
 
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
-  String payload = http.getString();           //Get response
+  if (httpCode < 0)
+  {
+    Serial.println(F("Received invalid http response"));
+    return false;
+  }
+  String payload = http.getString(); //Get response
 
   if (debugHttp && debugApiRegister)
   {
@@ -406,6 +422,7 @@ void sendApiRegister()
     Serial.println(payload); //Print request response payload
   }
   http.end(); //Close connection
+  return true;
 }
 
 bool sendApiValidate(String tokenValue)
@@ -433,8 +450,19 @@ bool sendApiValidate(String tokenValue)
   char JsonMessageBuffer[300];
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
 
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println(F("Wifi not connected"));
+    return false;
+  }
+
+  WiFiClient client;
   HTTPClient http;
-  http.begin(url);
+  if (!http.begin(client, url))
+  {
+    Serial.println(F("Failed to connect to http server"));
+    return false;
+  }
   http.addHeader("Content-Type", "application/json");
 
   if (debugHttp && debugApiValidate)
@@ -446,6 +474,11 @@ bool sendApiValidate(String tokenValue)
   }
 
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
+  if (httpCode < 0)
+  {
+    Serial.println(F("Received invalid http response"));
+    return false;
+  }
   const char *json = const_cast<char *>(http.getString().c_str());
 
   if (debugHttp && debugApiValidate)
