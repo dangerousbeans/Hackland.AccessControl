@@ -1,3 +1,16 @@
+/*
+todo:
+- remote unlock request
+- figure out how we can make https work, or fix remote server so http works
+- fix remote docker server so that api  doesn't redirect to login
+- update baseurl once docker server working
+- fix DNS entry (talk to Joran)
+- Fix doors in admin which are disconnected but still added to people, you can add them. There is no way to get rid of disconnected doors
+- Fix bug with scanning an unassigned token and then assigning the token which doesn't unlock
+- add caching into the http responses for unlock so at least if api goes down or wifi codes down, the last few swipes will still work offline (remember to clear cache if a swipe does hit api and is disallowed)
+- change button pin to 3 (check with Cam)
+- verify new wifi reconnect code is working and will jump to alternate access points on connection loss (and come back to the preferred one later?)
+*/
 
 #include <ESP8266WiFi.h>
 #include <SPI.h>
