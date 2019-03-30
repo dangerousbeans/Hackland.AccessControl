@@ -192,6 +192,12 @@ void initializeWifi()
   wifiMulti.addAP("Hackland", "hackland1");
   wifiMulti.addAP("Hackland++ 2G", "hackland1");
 
+  connectWifi();
+
+  timer.setInterval(1000, verifyWifiConnection);
+}
+void connectWifi()
+{
   while (wifiMulti.run() != WL_CONNECTED)
   {
     // Wait for the Wi-Fi to connect
@@ -211,7 +217,18 @@ void initializeWifi()
     Serial.println(WiFi.localIP());
   }
 }
-
+void verifyWifiConnection()
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    if (debugWifi)
+    {
+      Serial.println(F("Wifi is not connected..."));
+      Serial.println(F("Initializing Wifi..."));
+    }
+    connectWifi();
+  }
+}
 void initializeRfidReader()
 {
   SPI.begin();        // Init SPI bus
