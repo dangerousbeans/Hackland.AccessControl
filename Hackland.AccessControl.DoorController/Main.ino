@@ -348,7 +348,7 @@ void sendApiRegister()
     Serial.println(F("API Register"));
   }
 
-  char url[64];
+  char url[128];
   strcpy(url, ApiBaseUrl);
   strcat(url, (const char *)F("door/register"));
 
@@ -400,7 +400,7 @@ bool sendApiValidate(String tokenValue)
     Serial.println(tokenValue);
   }
 
-  char url[64];
+  char url[128];
   strcpy(url, ApiBaseUrl);
   strcat(url, (const char *)F("door/validate"));
 
