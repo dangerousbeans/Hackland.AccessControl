@@ -75,6 +75,7 @@ const bool debugHttp = false;
 const bool debugApiRegister = false;
 const bool debugApiValidate = false;
 const bool debugRfid = false;
+const bool debugFailedReads = false;
 const bool debugDoorLockUnlock = true;
 const bool debugLockStatus = true;
 const bool debugWifi = false;
@@ -267,7 +268,7 @@ void readRfidToSerial()
 
   if (!mfrc522.PICC_IsNewCardPresent())
   {
-    if (debugRfid)
+    if (debugRfid && debugFailedReads)
     {
       Serial.println(F("No card present"));
     }
@@ -378,13 +379,13 @@ bool sendApiRegister()
     Serial.println(F("API Register"));
   }
 
+  char url[128];
   if (WiFi.status() != WL_CONNECTED)
   {
     Serial.println(F("Wifi not connected"));
     return false;
   }
 
-  char url[64];
   strcpy(url, ApiBaseUrl);
   strcat(url, (const char *)F("door/register"));
 
@@ -447,7 +448,7 @@ bool sendApiValidate(String tokenValue)
     Serial.println(tokenValue);
   }
 
-  char url[64];
+  char url[128];
   strcpy(url, ApiBaseUrl);
   strcat(url, (const char *)F("door/validate"));
 
