@@ -94,7 +94,7 @@ void setup()
     initializeApi();
   }
 }
-int state = LOW;
+
 void loop()
 {
   timer.run();
