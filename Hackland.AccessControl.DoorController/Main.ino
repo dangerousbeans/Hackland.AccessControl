@@ -1,3 +1,16 @@
+/*
+todo:
+- remote unlock request
+- figure out how we can make https work, or fix remote server so http works
+- fix remote docker server so that api  doesn't redirect to login
+- update baseurl once docker server working
+- fix DNS entry (talk to Joran)
+- Fix doors in admin which are disconnected but still added to people, you can add them. There is no way to get rid of disconnected doors
+- Fix bug with scanning an unassigned token and then assigning the token which doesn't unlock
+- add caching into the http responses for unlock so at least if api goes down or wifi codes down, the last few swipes will still work offline (remember to clear cache if a swipe does hit api and is disallowed)
+- change button pin to 3 (check with Cam)
+- verify new wifi reconnect code is working and will jump to alternate access points on connection loss (and come back to the preferred one later?)
+*/
 
 #include <ESP8266WiFi.h>
 #include <SPI.h>
@@ -193,6 +206,12 @@ void initializeWifi()
   wifiMulti.addAP("Hackland", "hackland1");
   wifiMulti.addAP("Hackland++ 2G", "hackland1");
 
+  connectWifi();
+
+  timer.setInterval(1000, verifyWifiConnection);
+}
+void connectWifi()
+{
   while (wifiMulti.run() != WL_CONNECTED)
   {
     // Wait for the Wi-Fi to connect
@@ -212,7 +231,18 @@ void initializeWifi()
     Serial.println(WiFi.localIP());
   }
 }
-
+void verifyWifiConnection()
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    if (debugWifi)
+    {
+      Serial.println(F("Wifi is not connected..."));
+      Serial.println(F("Initializing Wifi..."));
+    }
+    connectWifi();
+  }
+}
 void initializeRfidReader()
 {
   SPI.begin();        // Init SPI bus
@@ -342,7 +372,7 @@ void initializeApi()
   timer.setInterval(ApiRegisterFrequencyMs, sendApiRegister);
 }
 
-void sendApiRegister()
+bool sendApiRegister()
 {
   if (debugApiRegister)
   {
@@ -350,6 +380,12 @@ void sendApiRegister()
   }
 
   char url[128];
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println(F("Wifi not connected"));
+    return false;
+  }
+
   strcpy(url, ApiBaseUrl);
   strcat(url, (const char *)F("door/register"));
 
@@ -367,8 +403,13 @@ void sendApiRegister()
   char JsonMessageBuffer[300];
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
 
+  WiFiClient client;
   HTTPClient http;
-  http.begin(url);
+  if (!http.begin(client, url))
+  {
+    Serial.println(F("Failed to connect to http server"));
+    return false;
+  }
   http.addHeader("Content-Type", "application/json");
 
   if (debugHttp && debugApiRegister)
@@ -380,7 +421,12 @@ void sendApiRegister()
   }
 
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
-  String payload = http.getString();           //Get response
+  if (httpCode < 0)
+  {
+    Serial.println(F("Received invalid http response"));
+    return false;
+  }
+  String payload = http.getString(); //Get response
 
   if (debugHttp && debugApiRegister)
   {
@@ -390,6 +436,7 @@ void sendApiRegister()
     Serial.println(payload); //Print request response payload
   }
   http.end(); //Close connection
+  return true;
 }
 
 bool sendApiValidate(String tokenValue)
@@ -417,8 +464,19 @@ bool sendApiValidate(String tokenValue)
   char JsonMessageBuffer[300];
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
 
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println(F("Wifi not connected"));
+    return false;
+  }
+
+  WiFiClient client;
   HTTPClient http;
-  http.begin(url);
+  if (!http.begin(client, url))
+  {
+    Serial.println(F("Failed to connect to http server"));
+    return false;
+  }
   http.addHeader("Content-Type", "application/json");
 
   if (debugHttp && debugApiValidate)
@@ -430,6 +488,11 @@ bool sendApiValidate(String tokenValue)
   }
 
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
+  if (httpCode < 0)
+  {
+    Serial.println(F("Received invalid http response"));
+    return false;
+  }
   const char *json = const_cast<char *>(http.getString().c_str());
 
   if (debugHttp && debugApiValidate)
