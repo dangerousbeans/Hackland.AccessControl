@@ -8,13 +8,12 @@
             "includePath": [
                 "C:\\Users\\user\\Documents\\Arduino\\libraries\\Adafruit_MCP23008_library",
                 "C:\\Users\\User\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
-                "C:\\Users\\User\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.4.1\\**",
+                "C:\\Users\\User\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.0\\**",
                 "C:\\Program Files (x86)\\Arduino\\tools\\**",
                 "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
                 "${workspaceRoot}",
                 "C:\\Program Files (x86)\\Arduino\\hardware\\tools\\**",
                 "C:\\Program Files (x86)\\Arduino\\libraries\\**",
-                "C:\\Users\\User\\Documents\\Arduino\\hardware\\tools\\**",
                 "C:\\Users\\User\\Documents\\Arduino\\libraries\\**"
             ],
             "forcedInclude": [],
