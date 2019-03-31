@@ -62,6 +62,7 @@ const bool debugHttp = false;
 const bool debugApiRegister = false;
 const bool debugApiValidate = false;
 const bool debugRfid = false;
+const bool debugFailedReads = false;
 const bool debugDoorLockUnlock = true;
 const bool debugLockStatus = true;
 const bool debugWifi = false;
@@ -237,7 +238,7 @@ void readRfidToSerial()
 
   if (!mfrc522.PICC_IsNewCardPresent())
   {
-    if (debugRfid)
+    if (debugRfid && debugFailedReads)
     {
       Serial.println(F("No card present"));
     }
