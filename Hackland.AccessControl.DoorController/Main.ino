@@ -14,6 +14,7 @@ todo:
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 
+//This code has been tested with v2.5.0 of esp8266; v2.4.1 has a bug where invalid http requests crash
 #include <ESP8266WiFiMulti.h> //Wi-Fi-Multi library
 #include <ESP8266HTTPClient.h>
 
