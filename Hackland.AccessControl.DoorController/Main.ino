@@ -379,7 +379,7 @@ bool sendApiRegister()
   }
 
   char url[128];
-  if (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() != WL_CONNECTED && debugApiRegister)
   {
     Serial.println(F("Wifi not connected"));
     return false;
@@ -403,7 +403,7 @@ bool sendApiRegister()
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
 
   HTTPClient http;
-  if (!http.begin(url))
+  if (!http.begin(url) && debugApiRegister)
   {
     Serial.println(F("Failed to connect to http server"));
     return false;
@@ -419,9 +419,15 @@ bool sendApiRegister()
   }
 
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
-  if (httpCode < 0)
+  if (httpCode < 0 && debugApiRegister)
   {
     Serial.println(F("Received invalid http response"));
+    return false;
+  }
+  if (httpCode != 200 && debugApiRegister)
+  {
+    Serial.print(F("Received invalid http response code "));
+    Serial.println(httpCode);
     return false;
   }
   String payload = http.getString(); //Get response
@@ -462,14 +468,14 @@ bool sendApiValidate(String tokenValue)
   char JsonMessageBuffer[300];
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
 
-  if (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() != WL_CONNECTED && debugApiValidate)
   {
     Serial.println(F("Wifi not connected"));
     return false;
   }
 
   HTTPClient http;
-  if (!http.begin(url))
+  if (!http.begin(url) && debugApiValidate)
   {
     Serial.println(F("Failed to connect to http server"));
     return false;
@@ -485,9 +491,15 @@ bool sendApiValidate(String tokenValue)
   }
 
   int httpCode = http.POST(JsonMessageBuffer); //Send the request
-  if (httpCode < 0)
+  if (httpCode < 0 && debugApiValidate)
   {
     Serial.println(F("Received invalid http response"));
+    return false;
+  }
+  if (httpCode != 200 && debugApiValidate)
+  {
+    Serial.print(F("Received invalid http response code "));
+    Serial.println(httpCode);
     return false;
   }
   const char *json = const_cast<char *>(http.getString().c_str());
