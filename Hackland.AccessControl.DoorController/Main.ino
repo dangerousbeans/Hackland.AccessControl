@@ -403,9 +403,8 @@ bool sendApiRegister()
   char JsonMessageBuffer[300];
   JsonEncoder.prettyPrintTo(JsonMessageBuffer, sizeof(JsonMessageBuffer));
 
-  WiFiClient client;
   HTTPClient http;
-  if (!http.begin(client, url))
+  if (!http.begin(url))
   {
     Serial.println(F("Failed to connect to http server"));
     return false;
@@ -470,9 +469,8 @@ bool sendApiValidate(String tokenValue)
     return false;
   }
 
-  WiFiClient client;
   HTTPClient http;
-  if (!http.begin(client, url))
+  if (!http.begin(url))
   {
     Serial.println(F("Failed to connect to http server"));
     return false;
