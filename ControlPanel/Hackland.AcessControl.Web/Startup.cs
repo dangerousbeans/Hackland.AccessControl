@@ -39,19 +39,21 @@ namespace Hackland.AccessControl.Web
                 if (Settings.IsRunningInDocker)
                 {
                     connectionString = Configuration.GetConnectionString("ProductionMySQLConnection");
-                    options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql));
+                    options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql)
+                                                                                   .MigrationsAssembly("Hackland.AccessControl.Data"));
                 }
                 else
                 {
                     if (Settings.UseSqlServer)
                     {
                         connectionString = Configuration.GetConnectionString("DevelopmentSQLServerConnection");
-                        options.UseSqlServer(connectionString);
+                        options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Hackland.AccessControl.Data"));
                     }
                     else
                     {
                         connectionString = Configuration.GetConnectionString("DevelopmentMySQLConnection");
-                        options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql));
+                        options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql)
+                                                                                       .MigrationsAssembly("Hackland.AccessControl.Data"));
                     }
                 }
             });

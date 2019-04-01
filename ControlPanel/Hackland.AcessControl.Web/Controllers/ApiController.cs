@@ -2,6 +2,7 @@
 using Hackland.AccessControl.Data.Enums;
 using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models.Api;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -14,6 +15,7 @@ namespace Hackland.AccessControl.Web.Controllers
 {
     [ApiController]
     [Route("api")]
+    [AllowAnonymous]
     public class ApiController : Controller
     {
         protected DataContext DataContext { get; set; }
