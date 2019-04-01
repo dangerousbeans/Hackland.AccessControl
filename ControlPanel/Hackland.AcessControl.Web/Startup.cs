@@ -79,7 +79,7 @@ namespace Hackland.AccessControl.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
+                //app.UseHsts();
             }
 
             //if (env.IsProduction())
