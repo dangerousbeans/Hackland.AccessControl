@@ -70,9 +70,9 @@ Once the tunnel is defined, you'll need to "ngrok start accesscontrol"
 Note: i'm using a license for ngrok, if you use the free version you can't customise the subdomain and will get a random one each time
 */
 
-const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.au.ngrok.io/api/";
 const bool debugHttp = false;
 const bool debugApiRegister = false;
+const char ApiBaseUrl[] PROGMEM = "http://accesscontrol.hackland.ineedcoffee.co.nz/api/";
 const bool debugApiValidate = false;
 const bool debugRfid = false;
 const bool debugFailedReads = false;
@@ -87,11 +87,11 @@ void setup()
   initializeSerial();
   if (verifyGpio())
   {
-    initializeWifi();
+  initializeWifi();
     initializeGpio();
     initializeLockStatus();
     initializeRfidReader();
-    initializeApi();
+  initializeApi();
   }
 }
 
