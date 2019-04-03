@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Hackland.AccessControl.Web.Models.Api
 {
-    public class RegisterDoorModel
+    public class RegisterDoorRequestModel
     {
         public string MacAddress { get; set; }
         public bool LockTriggerStatus { get; set; }

@@ -197,6 +197,24 @@ namespace Hackland.AccessControl.Web.Controllers
         }
 
         [HttpGet]
+        [Route("door/remote-unlock/{id}")]
+        public IActionResult RemoteUnlock(int id)
+        {
+            var item = DataContext.Doors
+                .Where(p => p.Id == id)
+                .FirstOrDefault();
+
+            item.RemoteUnlockRequestSeconds = 60;
+
+            DataContext.SaveChanges();
+
+            AddSuccess("Success", "Requested remote unlock of door {0}", item.Name);
+
+            return RedirectToAction("Index");
+
+        }
+
+        [HttpGet]
         public IActionResult Disassociate(int id)
         {
             var read = DataContext.DoorReads

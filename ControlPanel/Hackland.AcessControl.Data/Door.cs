@@ -14,6 +14,7 @@ namespace Hackland.AccessControl.Data
         public DateTime? LastReadTimestamp { get; set; }
         public DoorStatus Status { get; set; }
         public bool IsDeleted { get; set; }
+        public int? RemoteUnlockRequestSeconds { get; set; }
 
         public List<PersonDoor> PersonDoors { get; set; }
         public List<DoorRead> DoorReads { get; set; }
