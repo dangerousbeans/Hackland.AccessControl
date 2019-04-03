@@ -92,8 +92,8 @@ namespace Hackland.AccessControl.Web.Controllers
 
             if (model.TokenValue != null) model.TokenValue = model.TokenValue.Trim().ToUpper();
 
-            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
+            var scope = Settings.UseSqlServer ? new TransactionScope(TransactionScopeAsyncFlowOption.Enabled) : null;
+
                 var door = DataContext.Doors.FirstOrDefault(d => d.MacAddress == model.MacAddress);
                 if (door == null)
                 {
@@ -141,7 +141,10 @@ namespace Hackland.AccessControl.Web.Controllers
                     person.LastSeenTimestamp = DateTime.Now;
                 }
 
+            if (scope != null)
+            {
                 scope.Complete();
+            }
 
                 if (person == null)
                 {
@@ -163,8 +166,6 @@ namespace Hackland.AccessControl.Web.Controllers
                     });
                 }
 
-
-            }
         }
 
 
