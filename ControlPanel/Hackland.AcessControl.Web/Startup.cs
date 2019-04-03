@@ -40,20 +40,20 @@ namespace Hackland.AccessControl.Web
                 {
                     connectionString = Configuration.GetConnectionString("ProductionMySQLConnection");
                     options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql)
-                                                                                   .MigrationsAssembly("Hackland.AccessControl.Web"));
+                                                                                   .MigrationsAssembly("Hackland.AccessControl.Data"));
                 }
                 else
                 {
                     if (Settings.UseSqlServer)
                     {
                         connectionString = Configuration.GetConnectionString("DevelopmentSQLServerConnection");
-                        options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Hackland.AccessControl.Web"));
+                        options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Hackland.AccessControl.Data"));
                     }
                     else
                     {
                         connectionString = Configuration.GetConnectionString("DevelopmentMySQLConnection");
                         options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql)
-                                                                                       .MigrationsAssembly("Hackland.AccessControl.Web"));
+                                                                                       .MigrationsAssembly("Hackland.AccessControl.Data"));
                     }
                 }
             });
