@@ -39,21 +39,19 @@ namespace Hackland.AccessControl.Web
                 if (Settings.IsRunningInDocker)
                 {
                     connectionString = Configuration.GetConnectionString("ProductionMySQLConnection");
-                    options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql)
-                                                                                   .MigrationsAssembly("Hackland.AccessControl.Data"));
+                    options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql));
                 }
                 else
                 {
                     if (Settings.UseSqlServer)
                     {
                         connectionString = Configuration.GetConnectionString("DevelopmentSQLServerConnection");
-                        options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Hackland.AccessControl.Data"));
+                        options.UseSqlServer(connectionString);
                     }
                     else
                     {
                         connectionString = Configuration.GetConnectionString("DevelopmentMySQLConnection");
-                        options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql)
-                                                                                       .MigrationsAssembly("Hackland.AccessControl.Data"));
+                        options.UseMySql(connectionString, mySqlOptions => mySqlOptions.ServerVersion(new Version(6, 7, 17), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql));
                     }
                 }
             });
@@ -81,15 +79,8 @@ namespace Hackland.AccessControl.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                //app.UseHsts();
             }
 
-            //if (env.IsProduction())
-            //{
-            //    app.UseHttpsRedirection();
-            //}
-
-            InitializeDatabase(app);
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
@@ -102,13 +93,6 @@ namespace Hackland.AccessControl.Web
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
-
-        public void InitializeDatabase(IApplicationBuilder app)
-        {
-            using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                scope.ServiceProvider.GetRequiredService<Data.DataContext>().Database.Migrate();
-            }
-        }
     }
+
 }
