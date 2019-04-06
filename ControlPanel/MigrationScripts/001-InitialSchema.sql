@@ -96,13 +96,14 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1, 'agrath@hackland.nz','AGRATH@HACKLAND.NZ',NULL,NULL,'\0','AQAAAAEAACcQAAAAEFOHo2mV+Xa6gCY2jtanLDuXw2EBKPvzWzXV50gXVd78dJ8YecksAZnPrqECp/2nIw==','4DSYUW3ETC5LWUODLABCA6WCVUYUQOKJ','9fbe66d1-b601-4c8a-ae27-9c7a71d3330d',NULL,'\0','\0',NULL,'',0,NULL,NULL);
+INSERT INTO `user` VALUES (1, 'agrath@hackland.nz','AGRATH@HACKLAND.NZ',NULL,NULL,'\0','AQAAAAEAACcQAAAAEHqiD8WK3yxG41chU9Im3m/atGwUor471sD2+5s3y0Zw1fXQ+HlJwrvmIzmf325kow==','GTBHYMELIAJYGBFGMDAZ2QS3XCC46A2Y','9fbe66d1-b601-4c8a-ae27-9c7a71d3330d',NULL,'\0','\0',NULL,'',0,NULL,NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
 -- Table structure for table `userclaim`
 --
+select * from `user`
 
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
