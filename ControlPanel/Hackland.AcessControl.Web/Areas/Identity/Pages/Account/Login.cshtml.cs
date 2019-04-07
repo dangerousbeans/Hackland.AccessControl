@@ -1,4 +1,4 @@
-﻿using Hackland.AccessControl.Data;
+﻿using Hackland.AccessControl.Web.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

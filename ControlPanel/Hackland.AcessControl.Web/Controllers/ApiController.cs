@@ -1,6 +1,6 @@
-﻿using Hackland.AccessControl.Data;
-using Hackland.AccessControl.Data.Enums;
+﻿using Hackland.AccessControl.Enums;
 using Hackland.AccessControl.Shared;
+using Hackland.AccessControl.Web.Data;
 using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models.Api;
 using Microsoft.AspNetCore.Authorization;
@@ -34,21 +34,21 @@ namespace Hackland.AccessControl.Web.Controllers
 
             DoorStatus status = MapLockBooleansToDoorStatus(model);
 
-            var door = DataContext.Doors.FirstOrDefault(d => d.MacAddress == model.MacAddress);
+            var door = DataContext.Door.FirstOrDefault(d => d.MacAddress == model.MacAddress);
             if (door == null)
             {
                 door = new Door()
                 {
                     MacAddress = model.MacAddress,
                     Name = "Unknown",
-                    Status = status,
+                    Status = (int)status,
                     CreatedTimestamp = DateTime.Now
                 };
                 DataContext.Add(door);
             }
             door.LastHeartbeatTimestamp = DateTime.Now;
-            door.IsDeleted = false;
-            door.Status = status;
+            door.IsDeleted = 0;
+            door.Status = (int)status;
 
             int remoteUnlockRequestSeconds = door.RemoteUnlockRequestSeconds ?? 0;
             if (remoteUnlockRequestSeconds != 0)
@@ -108,42 +108,42 @@ namespace Hackland.AccessControl.Web.Controllers
 
             var scope = Settings.UseSqlServer ? new TransactionScope(TransactionScopeAsyncFlowOption.Enabled) : null;
 
-            var door = DataContext.Doors.FirstOrDefault(d => d.MacAddress == model.MacAddress);
+            var door = DataContext.Door.FirstOrDefault(d => d.MacAddress == model.MacAddress);
             if (door == null)
             {
                 return Json(new ValidateDoorUnlockResponseModel { IsUnlockAllowed = false, Message = "Invalid door mac address" });
             }
 
-            if (door.IsDeleted)
+            if (door.IsDeleted == 0)
             {
                 return Json(new ValidateDoorUnlockResponseModel { IsUnlockAllowed = false, Message = "Invalid door" });
             }
 
             door.LastReadTimestamp = DateTime.Now;
 
-            var person = DataContext.People
-                .Include(p => p.PersonDoors)
+            var person = DataContext.Person
+                .Include(p => p.Persondoor)
                 .FirstOrDefault(p => p.TokenValue == model.TokenValue);
 
             bool isAccessAllowed = person != null &&
-                !person.IsDeleted &&
-                person.PersonDoors != null &&
-                person.PersonDoors.Any(pd => pd.DoorId == door.Id && !pd.IsDeleted);
+                person.IsDeleted == 0 &&
+                person.Persondoor != null &&
+                person.Persondoor.Any(pd => pd.DoorId == door.Id && pd.IsDeleted == 0);
 
-            var read = new DoorRead
+            var read = new Doorread
             {
-                IsSuccess = isAccessAllowed,
+                IsSuccess = (short)(isAccessAllowed ? 1 : 0),
                 DoorId = door.Id,
                 PersonId = person != null ? person.Id : (int?)null,
                 Timestamp = DateTime.Now,
                 TokenValue = model.TokenValue
             };
-            var lastRead = DataContext.DoorReads.OrderByDescending(dr => dr.Timestamp).FirstOrDefault();
+            var lastRead = DataContext.Doorread.OrderByDescending(dr => dr.Timestamp).FirstOrDefault();
 
             //if the last read is for the same token and it was under a minute ago, don't log again
             if (lastRead == null || lastRead.TokenValue != model.TokenValue || (DateTime.Now - lastRead.Timestamp) > TimeSpan.FromMinutes(1))
             {
-                DataContext.DoorReads.Add(read);
+                DataContext.Doorread.Add(read);
             }
 
             DataContext.SaveChanges();

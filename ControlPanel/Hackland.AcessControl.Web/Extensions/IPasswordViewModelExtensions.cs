@@ -1,4 +1,4 @@
-﻿using Hackland.AccessControl.Data;
+﻿using Hackland.AccessControl.Web.Data;
 using Hackland.AccessControl.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;

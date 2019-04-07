@@ -1,4 +1,4 @@
-﻿using Hackland.AccessControl.Data;
+﻿using Hackland.AccessControl.Web.Data;
 using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models;
 using Hackland.AccessControl.Web.Models.Api;
@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 
 namespace Hackland.AccessControl.Web.Controllers
 {
@@ -27,17 +28,17 @@ namespace Hackland.AccessControl.Web.Controllers
         public IActionResult Index()
         {
             var epoch = DateTime.Now.AddDays(-1);
-            var expired = (from d in DataContext.Doors where !d.IsDeleted && d.LastHeartbeatTimestamp < epoch select d);
+            var expired = (from d in DataContext.Door where d.IsDeleted == 0 && d.LastHeartbeatTimestamp < epoch select d);
             if (expired.Any())
             {
                 foreach (var expiredDoor in expired)
                 {
-                    expiredDoor.IsDeleted = true;
+                    expiredDoor.IsDeleted = 1;
                 }
                 DataContext.SaveChanges();
             }
 
-            var doors = (from d in DataContext.Doors where !d.IsDeleted select d);
+            var doors = (from d in DataContext.Door where d.IsDeleted == 0 select d);
             var model = new DoorListViewModel
             {
                 Items = doors.ToList()
@@ -49,8 +50,8 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpGet]
         public IActionResult Update(int id)
         {
-            var item = DataContext.Doors
-                .Include(door => door.DoorReads)
+            var item = DataContext.Door
+                .Include(door => door.Doorread)
                 .ThenInclude(personDoors => personDoors.Person)
                 .Where(d => d.Id == id)
                 .Select(d => d)
@@ -74,7 +75,7 @@ namespace Hackland.AccessControl.Web.Controllers
             {
                 return View(binding.ConvertTo<UpdateDoorViewModel>());
             }
-            var item = DataContext.Doors
+            var item = DataContext.Door
              .Where(p => p.Id == binding.Id)
              .Select(p => p)
              .FirstOrDefault();
@@ -84,7 +85,9 @@ namespace Hackland.AccessControl.Web.Controllers
             {
                 binding.ConvertTo<Door>(item);
 
-                BindMetadataFields(item, binding.Mode);
+                var userId = int.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                item.UpdatedTimestamp = DateTime.Now;
+                item.UpdatedByUserId = userId;
 
                 DataContext.SaveChanges();
 
@@ -98,15 +101,21 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            var item = DataContext.Doors
-                .Include(d => d.PersonDoors)
+            var item = DataContext.Door
+                .Include(d => d.Persondoor)
                 .Where(p => p.Id == id)
                 .Select(p => p)
                 .FirstOrDefault();
 
-            item.IsDeleted = true;
-            BindMetadataFields(item, CreateUpdateModeEnum.Update);
-            item.PersonDoors.ForEach(pd => BindMetadataFields(pd, CreateUpdateModeEnum.Update).IsDeleted = true);
+            item.IsDeleted = 1;
+            var userId = int.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            item.UpdatedTimestamp = DateTime.Now;
+            item.UpdatedByUserId = userId;
+            foreach (var personDoor in item.Persondoor)
+            {
+                BindMetadataFields(personDoor, CreateUpdateModeEnum.Update);
+                personDoor.IsDeleted = 1;
+            }
 
             DataContext.SaveChanges();
 
@@ -118,8 +127,8 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpGet]
         public IActionResult Log(int id)
         {
-            var item = DataContext.Doors
-                .Include(d => d.DoorReads)
+            var item = DataContext.Door
+                .Include(d => d.Doorread)
                 .ThenInclude(dr => dr.Person)
                 .Where(p => p.Id == id)
                 .Select(p => p)
@@ -127,23 +136,23 @@ namespace Hackland.AccessControl.Web.Controllers
 
             var model = item.ConvertTo<ViewDoorLogViewModel>();
 
-            var recentItems = (from dr in DataContext.DoorReads
+            var recentItems = (from dr in DataContext.Doorread
                                where dr.DoorId == item.Id
-                               join person in DataContext.People on dr.PersonId equals person.Id into person_loj
+                               join person in DataContext.Person on dr.PersonId equals person.Id into person_loj
                                from person in person_loj.DefaultIfEmpty()
                                orderby dr.Timestamp descending
                                select new ViewDoorLogItemViewModel
                                {
                                    Id = dr.Id,
-                                   IsSuccess = dr.IsSuccess,
-                                   Timestamp = dr.Timestamp,
+                                   IsSuccess = (dr.IsSuccess == 1),
+                                   Timestamp = dr.Timestamp.Value,
                                    TokenValue = dr.TokenValue,
                                    Person = person != null ? new ViewDoorLogItemPersonViewModel
                                    {
                                        Id = person.Id,
                                        EmailAddress = person.EmailAddress,
                                        Name = person.Name,
-                                       IsDeleted = person.IsDeleted
+                                       IsDeleted = (person.IsDeleted == 1)
                                    } : null
                                })
                 .ToList();
@@ -152,7 +161,7 @@ namespace Hackland.AccessControl.Web.Controllers
             foreach (var read in recentItems)
             {
                 var tokenValue = read.TokenValue;
-                var tokenCurrentlyAllocatedTo = DataContext.People.FirstOrDefault(ip => ip.TokenValue == tokenValue);
+                var tokenCurrentlyAllocatedTo = DataContext.Person.FirstOrDefault(ip => ip.TokenValue == tokenValue);
 
                 if (tokenCurrentlyAllocatedTo == null)
                 {
@@ -200,7 +209,7 @@ namespace Hackland.AccessControl.Web.Controllers
         [Route("door/remote-unlock/{id}")]
         public IActionResult RemoteUnlock(int id)
         {
-            var item = DataContext.Doors
+            var item = DataContext.Door
                 .Where(p => p.Id == id)
                 .FirstOrDefault();
 
@@ -217,7 +226,7 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpGet]
         public IActionResult Disassociate(int id)
         {
-            var read = DataContext.DoorReads
+            var read = DataContext.Doorread
                 .Include(dr => dr.Person)
                 .FirstOrDefault(dr => dr.Id == id);
 
@@ -239,7 +248,7 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpGet]
         public IActionResult Assign(int id)
         {
-            var read = DataContext.DoorReads
+            var read = DataContext.Doorread
                 .Include(dr => dr.Person)
                 .Include(dr => dr.Door)
                 .FirstOrDefault(dr => dr.Id == id);
@@ -254,17 +263,17 @@ namespace Hackland.AccessControl.Web.Controllers
 
         }
 
-        private AssociateDoorRequestViewModel GetAssociateDoorRequestModel(DoorRead read)
+        private AssociateDoorRequestViewModel GetAssociateDoorRequestModel(Doorread read)
         {
             return new AssociateDoorRequestViewModel
             {
                 DoorReadId = read.Id,
                 DoorId = read.DoorId,
-                Timestamp = read.Timestamp,
+                Timestamp = read.Timestamp.Value,
                 DoorName = read.Door.Name == "Unknown" ? read.Door.MacAddress : read.Door.Name,
                 TokenValue = read.TokenValue,
-                AvailablePeople = DataContext.People
-                                .Where(p => !p.IsDeleted && (p.TokenValue == null || p.TokenValue == string.Empty))
+                AvailablePeople = DataContext.Person
+                                .Where(p => p.IsDeleted == 0 && (p.TokenValue == null || p.TokenValue == string.Empty))
                                 .OrderBy(p => p.Name)
                                 .Select(p => new SelectListItem
                                 {
@@ -278,8 +287,8 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpPost]
         public IActionResult Assign(AssociateDoorResponseViewModel model)
         {
-            var person = DataContext.People.FirstOrDefault(p => p.Id == model.PersonId);
-            var read = DataContext.DoorReads.Include(dr => dr.Door).Include(dr => dr.Person).First(dr => dr.Id == model.DoorReadId);
+            var person = DataContext.Person.FirstOrDefault(p => p.Id == model.PersonId);
+            var read = DataContext.Doorread.Include(dr => dr.Door).Include(dr => dr.Person).First(dr => dr.Id == model.DoorReadId);
             if (!ModelState.IsValid)
             {
                 AssociateDoorRequestViewModel requestModel = GetAssociateDoorRequestModel(read);

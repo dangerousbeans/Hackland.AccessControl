@@ -1,5 +1,4 @@
-﻿using Hackland.AccessControl.Data;
-using Hackland.AccessControl.Web.Models.ViewModels;
+﻿using Hackland.AccessControl.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;

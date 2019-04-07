@@ -1,4 +1,4 @@
-﻿using Hackland.AccessControl.Data;
+﻿using Hackland.AccessControl.Web.Data;
 using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models;
 using Hackland.AccessControl.Web.Models.ViewModels;
@@ -31,7 +31,7 @@ namespace Hackland.AccessControl.Web.Controllers
 
         public IActionResult Index()
         {
-            var users = (from d in DataContext.Users where d.UserName != DefaultHiddenAdministratorEmailAddress orderby d.UserName select d);
+            var users = (from d in DataContext.User where d.UserName != DefaultHiddenAdministratorEmailAddress orderby d.UserName select d);
 
             var model = new UserListViewModel
             {
@@ -84,32 +84,32 @@ namespace Hackland.AccessControl.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var item = DataContext.Users
+            var item = DataContext.User
             .Where(p => p.Id == id)
             .Select(p => p)
             .FirstOrDefault();
 
-            if (DataContext.Users.Where(u => u.UserName != DefaultHiddenAdministratorEmailAddress).Count() == 1)
+            if (DataContext.User.Where(u => u.UserName != DefaultHiddenAdministratorEmailAddress).Count() == 1)
             {
                 AddError("Error", "Cannot delete the last user (because then noone would have access)");
                 return RedirectToAction("Index");
             }
 
-            DataContext.UserRoles.RemoveRange(DataContext.UserRoles.Where(ur => ur.UserId == id));
-            DataContext.UserLogins.RemoveRange(DataContext.UserLogins.Where(ur => ur.UserId == id));
-            DataContext.UserClaims.RemoveRange(DataContext.UserClaims.Where(ur => ur.UserId == id));
-            DataContext.UserTokens.RemoveRange(DataContext.UserTokens.Where(ur => ur.UserId == id));
-            DataContext.Users.Remove(item);
+            DataContext.Userrole.RemoveRange(DataContext.Userrole.Where(ur => ur.UserId == id));
+            DataContext.Userlogin.RemoveRange(DataContext.Userlogin.Where(ur => ur.UserId == id));
+            DataContext.Userclaim.RemoveRange(DataContext.Userclaim.Where(ur => ur.UserId == id));
+            DataContext.Usertoken.RemoveRange(DataContext.Usertoken.Where(ur => ur.UserId == id));
+            DataContext.User.Remove(item);
 
-            var DefaultCreatedByUserId = DataContext.Users.Where(u => u.UserName == DefaultHiddenAdministratorEmailAddress).Select(u => u.Id).First();
-            await DataContext.Doors.Where(d => d.CreatedByUserId == item.Id).ForEachAsync(d => d.CreatedByUserId = DefaultCreatedByUserId);
-            await DataContext.Doors.Where(d => d.UpdatedByUserId == item.Id).ForEachAsync(d => d.UpdatedByUserId = DefaultCreatedByUserId);
-            await DataContext.People.Where(d => d.CreatedByUserId == item.Id).ForEachAsync(d => d.CreatedByUserId = DefaultCreatedByUserId);
-            await DataContext.People.Where(d => d.UpdatedByUserId == item.Id).ForEachAsync(d => d.UpdatedByUserId = DefaultCreatedByUserId);
-            await DataContext.PeopleDoors.Where(d => d.CreatedByUserId == item.Id).ForEachAsync(d => d.CreatedByUserId = DefaultCreatedByUserId);
-            await DataContext.PeopleDoors.Where(d => d.UpdatedByUserId == item.Id).ForEachAsync(d => d.UpdatedByUserId = DefaultCreatedByUserId);
+            var DefaultCreatedByUserId = DataContext.User.Where(u => u.UserName == DefaultHiddenAdministratorEmailAddress).Select(u => u.Id).First();
+            await DataContext.Door.Where(d => d.CreatedByUserId == item.Id).ForEachAsync(d => d.CreatedByUserId = DefaultCreatedByUserId);
+            await DataContext.Door.Where(d => d.UpdatedByUserId == item.Id).ForEachAsync(d => d.UpdatedByUserId = DefaultCreatedByUserId);
+            await DataContext.Person.Where(d => d.CreatedByUserId == item.Id).ForEachAsync(d => d.CreatedByUserId = DefaultCreatedByUserId);
+            await DataContext.Person.Where(d => d.UpdatedByUserId == item.Id).ForEachAsync(d => d.UpdatedByUserId = DefaultCreatedByUserId);
+            await DataContext.Persondoor.Where(d => d.CreatedByUserId == item.Id).ForEachAsync(d => d.CreatedByUserId = DefaultCreatedByUserId);
+            await DataContext.Persondoor.Where(d => d.UpdatedByUserId == item.Id).ForEachAsync(d => d.UpdatedByUserId = DefaultCreatedByUserId);
 
             DataContext.SaveChanges();
 
@@ -120,9 +120,9 @@ namespace Hackland.AccessControl.Web.Controllers
 
         [HttpGet]
         [Route("user/reset-password/{id}")]
-        public async Task<IActionResult> ResetPassword(Guid id)
+        public async Task<IActionResult> ResetPassword(int id)
         {
-            var item = DataContext.Users
+            var item = DataContext.User
             .Where(p => p.Id == id)
             .Select(p => p)
             .FirstOrDefault();
@@ -137,9 +137,9 @@ namespace Hackland.AccessControl.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Update(Guid id)
+        public async Task<IActionResult> Update(int id)
         {
-            var item = DataContext.Users
+            var item = DataContext.User
             .Where(p => p.Id == id)
             .Select(p => p)
             .FirstOrDefault();
@@ -158,7 +158,7 @@ namespace Hackland.AccessControl.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(UpdateUserViewModel model)
         {
-            var item = DataContext.Users
+            var item = DataContext.User
             .Where(p => p.Id == model.Id)
             .Select(p => p)
             .FirstOrDefault();
@@ -192,7 +192,7 @@ namespace Hackland.AccessControl.Web.Controllers
         [Route("user/reset-password")]
         public async Task<IActionResult> ResetPassword(ResetUserPasswordViewModel model)
         {
-            var item = DataContext.Users
+            var item = DataContext.User
             .Where(p => p.Id == model.Id)
             .Select(p => p)
             .FirstOrDefault();

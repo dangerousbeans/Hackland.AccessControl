@@ -1,4 +1,4 @@
-﻿using Hackland.AccessControl.Data;
+﻿using Hackland.AccessControl.Interfaces;
 using Hackland.AccessControl.Web.Extensions;
 using Hackland.AccessControl.Web.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +16,8 @@ namespace Hackland.AccessControl.Web.Controllers
 
         public T BindMetadataFields<T>(T item, CreateUpdateModeEnum mode) where T : IMetadataFields
         {
-            var userId = Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = int.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
             if (mode == CreateUpdateModeEnum.Create)
             {
                 item.CreatedTimestamp = DateTime.Now;

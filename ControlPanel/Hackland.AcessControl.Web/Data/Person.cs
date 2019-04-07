@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Hackland.AccessControl.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace Hackland.AccessControl.Web.Data
 {
-    public partial class Person
+    public partial class Person : IMetadataFields
     {
         public Person()
         {

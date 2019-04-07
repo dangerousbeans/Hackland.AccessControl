@@ -1,5 +1,5 @@
-﻿using Hackland.AccessControl.Data;
-using Hackland.AccessControl.Shared;
+﻿using Hackland.AccessControl.Shared;
+using Hackland.AccessControl.Web.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;

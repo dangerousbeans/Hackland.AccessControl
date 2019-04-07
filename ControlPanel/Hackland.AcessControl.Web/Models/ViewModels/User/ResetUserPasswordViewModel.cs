@@ -1,5 +1,4 @@
-﻿using Hackland.AccessControl.Data;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,7 +10,7 @@ namespace Hackland.AccessControl.Web.Models.ViewModels
     public class ResetUserPasswordViewModel : IPasswordViewModel, IValidatableObject
     {
         [Required]
-        public Guid? Id { get; set; }
+        public int? Id { get; set; }
 
         [Display(Name = "Email address")]
         public string EmailAddress { get; set; }

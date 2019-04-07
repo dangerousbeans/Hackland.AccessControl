@@ -1,5 +1,4 @@
-﻿using Hackland.AccessControl.Data;
-using Hackland.AccessControl.Web.Models.ViewModels;
+﻿using Hackland.AccessControl.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
@@ -13,7 +12,7 @@ namespace Hackland.AccessControl.Web.Models
     public class UpdateUserBindingModel : IUserViewModel
     {
         [Required]
-        public Guid? Id { get; set; }
+        public int? Id { get; set; }
 
         [Required]
         [EmailAddress]
