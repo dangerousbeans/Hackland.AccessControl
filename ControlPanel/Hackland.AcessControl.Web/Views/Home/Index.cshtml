@@ -6,6 +6,11 @@
 <h1>Home</h1>
 <strong>Todo:</strong>
 <ul>
+    <li>timestamps are all showing as AM when PM</li>
     <li>Forgot password doesnt work / needs styling (scaffolding fails in vs without update?)</li>
-    <li>Door status (maybe done)</li>
+    <li>fix DNS entry (talk to Joran)</li>
+    <li>Fix doors in admin which are disconnected but still added to people, you can add them. There is no way to get rid of disconnected doors</li>
+    <li>Fix bug with scanning an unassigned token and then assigning the token which doesn't unlock</li>
+    <li>add caching into the http responses for unlock so at least if api goes down or wifi codes down, the last few swipes will still work offline (remember to clear cache if a swipe does hit api and is disallowed)</li>
+    <li>verify new wifi reconnect code is working and will jump to alternate access points on connection loss (and come back to the preferred one later?)</li>
 </ul>
