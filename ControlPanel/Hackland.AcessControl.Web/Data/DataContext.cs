@@ -43,7 +43,7 @@ namespace Hackland.AccessControl.Web.Data
 
             builder.Entity<Door>(entity =>
             {
-                entity.ToTable("door");
+                entity.ToTable("Door");
 
                 entity.HasIndex(e => e.CreatedByUserId)
                     .HasName("FK_Door_CreatedUser");
@@ -86,7 +86,7 @@ namespace Hackland.AccessControl.Web.Data
 
             builder.Entity<DoorRead>(entity =>
             {
-                entity.ToTable("doorread");
+                entity.ToTable("DoorRead");
 
                 entity.HasIndex(e => e.DoorId)
                     .HasName("FK_DoorRead_Door");
@@ -120,7 +120,7 @@ namespace Hackland.AccessControl.Web.Data
 
             builder.Entity<Person>(entity =>
             {
-                entity.ToTable("person");
+                entity.ToTable("Person");
 
                 entity.HasIndex(e => e.CreatedByUserId)
                     .HasName("FK_Person_CreatedUser");
@@ -165,7 +165,7 @@ namespace Hackland.AccessControl.Web.Data
                 entity.HasKey(e => new { e.PersonId, e.DoorId })
                     .HasName("PRIMARY");
 
-                entity.ToTable("persondoor");
+                entity.ToTable("PersonDoor");
 
                 entity.HasIndex(e => e.CreatedByUserId)
                     .HasName("FK_PersonDoor_CreatedUser");
