@@ -87,11 +87,11 @@ void setup()
   initializeSerial();
   if (verifyGpio())
   {
-  initializeWifi();
+    initializeWifi();
     initializeGpio();
     initializeLockStatus();
     initializeRfidReader();
-  initializeApi();
+    initializeApi();
   }
 }
 
@@ -191,7 +191,7 @@ void readLockStatus()
   }
   if (lockRequestExitStatus && lockTriggerStatus)
   {
-    unlockDoor(false);
+    unlockDoor(5);
   }
 }
 
@@ -317,11 +317,11 @@ void readRfidToSerial()
   }
   if (shouldUnlock)
   {
-    unlockDoor(false);
+    unlockDoor(5);
   }
 }
 
-void unlockDoor(bool permanent)
+void unlockDoor(int seconds) /* pass 0 for permanent */
 {
   if (debugDoorLockUnlock)
   {
@@ -330,10 +330,10 @@ void unlockDoor(bool permanent)
   digitalWrite(RELAY_PIN, HIGH);
   digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
   lockTriggerStatus = false;
-  if (!permanent)
+  if (seconds != 0)
   {
-    //call lockDoor in 5 sec
-    timer.setTimeout(5000, lockDoor);
+    //call lockDoor 
+    timer.setTimeout(seconds * 1000, lockDoor);
   }
 }
 
@@ -431,15 +431,29 @@ bool sendApiRegister()
     Serial.println(httpCode);
     return false;
   }
-  String payload = http.getString(); //Get response
-
+  
+  const char *json = const_cast<char *>(http.getString().c_str());
   if (debugHttp && debugApiRegister)
   {
     Serial.print("Response ");
     Serial.println(httpCode); //Print HTTP return code
     Serial.print("<= ");
-    Serial.println(payload); //Print request response payload
+    Serial.println(json); //Print request response payload
   }
+
+  const size_t capacity = JSON_OBJECT_SIZE(3) + 50;
+  DynamicJsonBuffer jsonBuffer(capacity);
+  JsonObject &root = jsonBuffer.parseObject(json);
+
+  bool success = root["success"]; // true
+  int remoteUnlockRequestSeconds = root["remoteUnlockRequestSeconds"];          // 0 or > 0
+  int doorId = root["doorId"]; // 2
+
+  if(remoteUnlockRequestSeconds > 0)
+  {
+      unlockDoor(remoteUnlockRequestSeconds);
+  }
+
   http.end(); //Close connection
   return true;
 }
