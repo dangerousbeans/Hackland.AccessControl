@@ -165,7 +165,7 @@ void initializeLockStatus()
   Serial.println(F("Initializing lock status..."));
   lockReedStatus = (mcp.digitalRead(REED_PIN) == LOW);
   lockMagBondStatus = (mcp.digitalRead(MAGBOND_PIN) == LOW);
-  lockRequestExitStatus = (mcp.digitalRead(BUTTON_PIN) == HIGH);
+  lockRequestExitStatus = (mcp.digitalRead(BUTTON_PIN) == LOW);
   timer.setInterval(200, readLockStatus);
 }
 
@@ -174,7 +174,7 @@ void readLockStatus()
 {
   lockReedStatus = (mcp.digitalRead(REED_PIN) == LOW);
   lockMagBondStatus = (mcp.digitalRead(MAGBOND_PIN) == LOW);
-  lockRequestExitStatus = (mcp.digitalRead(BUTTON_PIN) == HIGH);
+  lockRequestExitStatus = (mcp.digitalRead(BUTTON_PIN) == LOW);
   if (debugLockStatus)
   {
     Serial.print(F("Reading lock status ("));
