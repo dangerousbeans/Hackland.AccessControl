@@ -8,8 +8,8 @@ namespace Hackland.AccessControl.Web.Data
     {
         public Person()
         {
-            Doorread = new HashSet<Doorread>();
-            Persondoor = new HashSet<Persondoor>();
+            DoorReads = new HashSet<DoorRead>();
+            PersonDoors = new HashSet<PersonDoor>();
         }
 
         public int Id { get; set; }
@@ -21,12 +21,12 @@ namespace Hackland.AccessControl.Web.Data
         public DateTime? UpdatedTimestamp { get; set; }
         public int? UpdatedByUserId { get; set; }
         public DateTime? LastSeenTimestamp { get; set; }
-        public short IsDeleted { get; set; }
+        public bool IsDeleted { get; set; }
         public string TokenValue { get; set; }
 
         public virtual User CreatedByUser { get; set; }
         public virtual User UpdatedByUser { get; set; }
-        public virtual ICollection<Doorread> Doorread { get; set; }
-        public virtual ICollection<Persondoor> Persondoor { get; set; }
+        public virtual ICollection<DoorRead> DoorReads { get; set; }
+        public virtual ICollection<PersonDoor> PersonDoors { get; set; }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Hackland.AccessControl.Web.Data
 {
-    public partial class Persondoor : IMetadataFields
+    public partial class PersonDoor : IMetadataFields
     {
         public int PersonId { get; set; }
         public int DoorId { get; set; }
@@ -12,7 +12,7 @@ namespace Hackland.AccessControl.Web.Data
         public int CreatedByUserId { get; set; }
         public DateTime? UpdatedTimestamp { get; set; }
         public int? UpdatedByUserId { get; set; }
-        public short IsDeleted { get; set; }
+        public bool IsDeleted { get; set; }
 
         public virtual User CreatedByUser { get; set; }
         public virtual Door Door { get; set; }

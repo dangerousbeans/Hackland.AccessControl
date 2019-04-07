@@ -1,10 +1,14 @@
 ﻿using System;
+using Hackland.AccessControl.Shared;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hackland.AccessControl.Web.Data
 {
-    public partial class DataContext : DbContext
+    public partial class DataContext : IdentityDbContext<User, Role, int>
     {
         public DataContext()
         {
@@ -15,30 +19,29 @@ namespace Hackland.AccessControl.Web.Data
         {
         }
 
-        public virtual DbSet<Door> Door { get; set; }
-        public virtual DbSet<Doorread> Doorread { get; set; }
-        public virtual DbSet<Person> Person { get; set; }
-        public virtual DbSet<Persondoor> Persondoor { get; set; }
-        public virtual DbSet<Role> Role { get; set; }
-        public virtual DbSet<Roleclaim> Roleclaim { get; set; }
-        public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<Userclaim> Userclaim { get; set; }
-        public virtual DbSet<Userlogin> Userlogin { get; set; }
-        public virtual DbSet<Userrole> Userrole { get; set; }
-        public virtual DbSet<Usertoken> Usertoken { get; set; }
+        public virtual DbSet<Door> Doors { get; set; }
+        public virtual DbSet<DoorRead> DoorReads { get; set; }
+        public virtual DbSet<Person> People { get; set; }
+        public virtual DbSet<PersonDoor> PersonDoors { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySql("server=localhost;database=accesscontrol;user=accesscontrol;password=accesscontrol;GuidFormat=LittleEndianBinary16;");
-            }
+
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            modelBuilder.Entity<Door>(entity =>
+            base.OnModelCreating(builder);
+
+            builder.Entity<User>(e => e.ToTable("User"));
+            builder.Entity<Role>(e => e.ToTable("Role"));
+            builder.Entity<IdentityUserClaim<int>>(e => e.ToTable("UserClaim"));
+            builder.Entity<IdentityUserLogin<int>>(e => e.ToTable("UserLogin"));
+            builder.Entity<IdentityUserRole<int>>(e => e.ToTable("UserRole"));
+            builder.Entity<IdentityUserToken<int>>(e => e.ToTable("UserToken"));
+            builder.Entity<IdentityRoleClaim<int>>(e => e.ToTable("RoleClaim"));
+
+            builder.Entity<Door>(entity =>
             {
                 entity.ToTable("door");
 
@@ -81,7 +84,7 @@ namespace Hackland.AccessControl.Web.Data
                     .HasConstraintName("FK_Door_UpdatedUser");
             });
 
-            modelBuilder.Entity<Doorread>(entity =>
+            builder.Entity<DoorRead>(entity =>
             {
                 entity.ToTable("doorread");
 
@@ -104,18 +107,18 @@ namespace Hackland.AccessControl.Web.Data
                     .HasColumnType("longtext");
 
                 entity.HasOne(d => d.Door)
-                    .WithMany(p => p.Doorread)
+                    .WithMany(p => p.DoorReads)
                     .HasForeignKey(d => d.DoorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_DoorRead_Door");
 
                 entity.HasOne(d => d.Person)
-                    .WithMany(p => p.Doorread)
+                    .WithMany(p => p.DoorReads)
                     .HasForeignKey(d => d.PersonId)
                     .HasConstraintName("FK_DoorRead_Person");
             });
 
-            modelBuilder.Entity<Person>(entity =>
+            builder.Entity<Person>(entity =>
             {
                 entity.ToTable("person");
 
@@ -157,7 +160,7 @@ namespace Hackland.AccessControl.Web.Data
                     .HasConstraintName("FK_Person_UpdatedUser");
             });
 
-            modelBuilder.Entity<Persondoor>(entity =>
+            builder.Entity<PersonDoor>(entity =>
             {
                 entity.HasKey(e => new { e.PersonId, e.DoorId })
                     .HasName("PRIMARY");
@@ -190,13 +193,13 @@ namespace Hackland.AccessControl.Web.Data
                     .HasConstraintName("FK_PersonDoor_CreatedUser");
 
                 entity.HasOne(d => d.Door)
-                    .WithMany(p => p.Persondoor)
+                    .WithMany(p => p.PersonDoors)
                     .HasForeignKey(d => d.DoorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_PersonDoor_Door");
 
                 entity.HasOne(d => d.Person)
-                    .WithMany(p => p.Persondoor)
+                    .WithMany(p => p.PersonDoors)
                     .HasForeignKey(d => d.PersonId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_PersonDoor_Person");
@@ -207,182 +210,20 @@ namespace Hackland.AccessControl.Web.Data
                     .HasConstraintName("FK_PersonDoor_UpdatedUser");
             });
 
-            modelBuilder.Entity<Role>(entity =>
+            if (Settings.IsRunningInDocker || !Settings.UseSqlServer)
             {
-                entity.ToTable("role");
+                foreach (var entityType in builder.Model.GetEntityTypes())
+                {
+                    foreach (var property in entityType.GetProperties())
+                    {
+                        if (property.ClrType == typeof(bool))
+                        {
+                            property.SetValueConverter(new BoolToZeroOneConverter<Int16>());
+                        }
+                    }
+                }
+            }
 
-                entity.HasIndex(e => e.NormalizedName)
-                    .HasName("RoleNameIndex")
-                    .IsUnique();
-
-                entity.Property(e => e.Id).HasColumnType("int(11)");
-
-                entity.Property(e => e.ConcurrencyStamp).HasColumnType("longtext");
-
-                entity.Property(e => e.Name).HasColumnType("varchar(128)");
-
-                entity.Property(e => e.NormalizedName).HasColumnType("varchar(128)");
-            });
-
-            modelBuilder.Entity<Roleclaim>(entity =>
-            {
-                entity.ToTable("roleclaim");
-
-                entity.HasIndex(e => e.RoleId)
-                    .HasName("IX_RoleClaim_RoleId");
-
-                entity.Property(e => e.Id).HasColumnType("int(11)");
-
-                entity.Property(e => e.ClaimType).HasColumnType("longtext");
-
-                entity.Property(e => e.ClaimValue).HasColumnType("longtext");
-
-                entity.Property(e => e.RoleId).HasColumnType("int(11)");
-
-                entity.HasOne(d => d.Role)
-                    .WithMany(p => p.Roleclaim)
-                    .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK_RoleClaim_Role_RoleId");
-            });
-
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.ToTable("user");
-
-                entity.HasIndex(e => e.NormalizedEmail)
-                    .HasName("EmailIndex");
-
-                entity.HasIndex(e => e.NormalizedUserName)
-                    .HasName("UserNameIndex")
-                    .IsUnique();
-
-                entity.Property(e => e.Id).HasColumnType("int(11)");
-
-                entity.Property(e => e.AccessFailedCount).HasColumnType("int(11)");
-
-                entity.Property(e => e.ConcurrencyStamp).HasColumnType("longtext");
-
-                entity.Property(e => e.Email).HasColumnType("varchar(128)");
-
-                entity.Property(e => e.EmailConfirmed).HasColumnType("bit(1)");
-
-                entity.Property(e => e.FirstName).HasColumnType("longtext");
-
-                entity.Property(e => e.LastName).HasColumnType("longtext");
-
-                entity.Property(e => e.LockoutEnabled).HasColumnType("bit(1)");
-
-                entity.Property(e => e.NormalizedEmail).HasColumnType("varchar(128)");
-
-                entity.Property(e => e.NormalizedUserName).HasColumnType("varchar(128)");
-
-                entity.Property(e => e.PasswordHash).HasColumnType("longtext");
-
-                entity.Property(e => e.PhoneNumber).HasColumnType("longtext");
-
-                entity.Property(e => e.PhoneNumberConfirmed).HasColumnType("bit(1)");
-
-                entity.Property(e => e.SecurityStamp).HasColumnType("longtext");
-
-                entity.Property(e => e.TwoFactorEnabled).HasColumnType("bit(1)");
-
-                entity.Property(e => e.UserName).HasColumnType("varchar(128)");
-            });
-
-            modelBuilder.Entity<Userclaim>(entity =>
-            {
-                entity.ToTable("userclaim");
-
-                entity.HasIndex(e => e.UserId)
-                    .HasName("IX_UserClaim_UserId");
-
-                entity.Property(e => e.Id).HasColumnType("int(11)");
-
-                entity.Property(e => e.ClaimType).HasColumnType("longtext");
-
-                entity.Property(e => e.ClaimValue).HasColumnType("longtext");
-
-                entity.Property(e => e.UserId).HasColumnType("int(11)");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Userclaim)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserClaim_User_UserId");
-            });
-
-            modelBuilder.Entity<Userlogin>(entity =>
-            {
-                entity.HasKey(e => new { e.LoginProvider, e.ProviderKey })
-                    .HasName("PRIMARY");
-
-                entity.ToTable("userlogin");
-
-                entity.HasIndex(e => e.UserId)
-                    .HasName("IX_UserLogin_UserId");
-
-                entity.Property(e => e.LoginProvider).HasColumnType("varchar(128)");
-
-                entity.Property(e => e.ProviderKey).HasColumnType("varchar(128)");
-
-                entity.Property(e => e.ProviderDisplayName).HasColumnType("longtext");
-
-                entity.Property(e => e.UserId).HasColumnType("int(11)");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Userlogin)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserLogin_User_UserId");
-            });
-
-            modelBuilder.Entity<Userrole>(entity =>
-            {
-                entity.HasKey(e => new { e.UserId, e.RoleId })
-                    .HasName("PRIMARY");
-
-                entity.ToTable("userrole");
-
-                entity.HasIndex(e => e.RoleId)
-                    .HasName("IX_UserRole_RoleId");
-
-                entity.Property(e => e.UserId).HasColumnType("int(11)");
-
-                entity.Property(e => e.RoleId).HasColumnType("int(11)");
-
-                entity.HasOne(d => d.Role)
-                    .WithMany(p => p.Userrole)
-                    .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK_UserRole_Role_RoleId");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Userrole)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserRole_User_UserId");
-            });
-
-            modelBuilder.Entity<Usertoken>(entity =>
-            {
-                entity.HasKey(e => e.UserId)
-                    .HasName("PRIMARY");
-
-                entity.ToTable("usertoken");
-
-                entity.Property(e => e.UserId).HasColumnType("int(11)");
-
-                entity.Property(e => e.LoginProvider)
-                    .IsRequired()
-                    .HasColumnType("varchar(128)");
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasColumnType("varchar(128)");
-
-                entity.Property(e => e.Value).HasColumnType("longtext");
-
-                entity.HasOne(d => d.User)
-                    .WithOne(p => p.Usertoken)
-                    .HasForeignKey<Usertoken>(d => d.UserId)
-                    .HasConstraintName("FK_UserToken_User_UserId");
-            });
         }
     }
 }

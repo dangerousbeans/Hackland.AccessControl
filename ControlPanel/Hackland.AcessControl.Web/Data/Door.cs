@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hackland.AccessControl.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace Hackland.AccessControl.Web.Data
@@ -7,8 +8,8 @@ namespace Hackland.AccessControl.Web.Data
     {
         public Door()
         {
-            Doorread = new HashSet<Doorread>();
-            Persondoor = new HashSet<Persondoor>();
+            DoorReads = new HashSet<DoorRead>();
+            PersonDoors = new HashSet<PersonDoor>();
         }
 
         public int Id { get; set; }
@@ -16,8 +17,8 @@ namespace Hackland.AccessControl.Web.Data
         public string MacAddress { get; set; }
         public DateTime LastHeartbeatTimestamp { get; set; }
         public DateTime? LastReadTimestamp { get; set; }
-        public int Status { get; set; }
-        public short IsDeleted { get; set; }
+        public DoorStatus Status { get; set; }
+        public bool IsDeleted { get; set; }
         public DateTime CreatedTimestamp { get; set; }
         public int? CreatedByUserId { get; set; }
         public DateTime? UpdatedTimestamp { get; set; }
@@ -26,7 +27,7 @@ namespace Hackland.AccessControl.Web.Data
 
         public virtual User CreatedByUser { get; set; }
         public virtual User UpdatedByUser { get; set; }
-        public virtual ICollection<Doorread> Doorread { get; set; }
-        public virtual ICollection<Persondoor> Persondoor { get; set; }
+        public virtual ICollection<DoorRead> DoorReads { get; set; }
+        public virtual ICollection<PersonDoor> PersonDoors { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Hackland.AccessControl.Web.Data
 {
-    public partial class Doorread
+    public partial class DoorRead
     {
         public int Id { get; set; }
         public string TokenValue { get; set; }
