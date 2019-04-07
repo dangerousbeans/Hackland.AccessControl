@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext "server=localhost;database=accesscontrol;user=accesscontrol;password=accesscontrol;GuidFormat=LittleEndianBinary16;" Pomelo.EntityFrameworkCore.MySql -OutputDir Data -Force -Context DataContext -Verbose

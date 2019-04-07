@@ -3,11 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hackland.AccessControl.Data", "Hackland.AcessControl.Data\Hackland.AccessControl.Data.csproj", "{06A107AA-A37D-49BD-84BC-C416C127BE0E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hackland.AccessControl.Web", "Hackland.AcessControl.Web\Hackland.AccessControl.Web.csproj", "{011A325F-FD29-4943-A367-8E43FC9E5DB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hackland.AccessControl.Shared", "Hackland.AcceessControl.Shared\Hackland.AccessControl.Shared.csproj", "{356CE785-E32C-4254-9D31-D31337953527}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hackland.AccessControl.Shared", "Hackland.AcceessControl.Shared\Hackland.AccessControl.Shared.csproj", "{356CE785-E32C-4254-9D31-D31337953527}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{06A107AA-A37D-49BD-84BC-C416C127BE0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06A107AA-A37D-49BD-84BC-C416C127BE0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06A107AA-A37D-49BD-84BC-C416C127BE0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06A107AA-A37D-49BD-84BC-C416C127BE0E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{011A325F-FD29-4943-A367-8E43FC9E5DB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{011A325F-FD29-4943-A367-8E43FC9E5DB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{011A325F-FD29-4943-A367-8E43FC9E5DB9}.Release|Any CPU.ActiveCfg = Release|Any CPU

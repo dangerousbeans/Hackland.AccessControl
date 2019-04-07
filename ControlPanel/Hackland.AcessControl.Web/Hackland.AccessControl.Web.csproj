@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.4.4" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.2" PrivateAssets="All" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.Mysql" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +30,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hackland.AcceessControl.Shared\Hackland.AccessControl.Shared.csproj" />
-    <ProjectReference Include="..\Hackland.AcessControl.Data\Hackland.AccessControl.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>
