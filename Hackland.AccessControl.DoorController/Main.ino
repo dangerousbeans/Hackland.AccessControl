@@ -41,7 +41,7 @@ todo:
 const int RELAY_PIN = D8;
 const int REED_PIN = 0;
 const int MAGBOND_PIN = 1;
-const int BUTTON_PIN = 3;
+const int BUTTON_PIN = 6;
 
 bool lockReedStatus = false;        //false = magnet present, true = magnet not found
 bool lockMagBondStatus = false;     //false = bonded, true = bond not detected
